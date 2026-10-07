@@ -29,16 +29,30 @@ export default function Header({ title, description, onMenuClick }) {
         <span />
         <span />
       </button>
+
       <div className="page-heading">
-        <span className="eyebrow">SMART CITY / INFRASTRUCTURE INTELLIGENCE</span>
+        <div className="eyebrow-container">
+          <span className="road-hazard-strip" />
+          <span className="eyebrow">ROAD INFRASTRUCTURE PROJECT · CIVIL HEALTH</span>
+        </div>
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
+
       <div className="topbar-status">
-        <span className={`api-dot ${connected ? 'is-connected' : 'is-offline'}`} />
-        <span>{connected ? 'API Connected' : 'API Offline'}</span>
+        <div className="header-traffic-signal" title={connected ? 'System Status: Active & Connected' : 'System Status: Backend Offline'}>
+          <span className={`signal-dot red ${!connected ? 'lit' : ''}`} />
+          <span className="signal-dot yellow" />
+          <span className={`signal-dot green ${connected ? 'lit' : ''}`} />
+        </div>
+        <div className="signal-label-group">
+          <strong>{connected ? 'HIGHWAY SENSORS LIVE' : 'SIGNAL DISCONNECTED'}</strong>
+          <small>{connected ? 'FastAPI Gateway Active' : 'Check Local Server'}</small>
+        </div>
         <span className="status-divider" />
-        <span className="system-label">AI Prediction System</span>
+        <div className="project-badge-pill">
+          <span>PROJECT 2026</span>
+        </div>
       </div>
     </header>
   );

@@ -1,6 +1,6 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-const COLORS = ['#20a878', '#e5a32b', '#e45656'];
+const COLORS = ['#10b981', '#facc15', '#ef4444'];
 
 export default function RiskDistribution({ data = [] }) {
   const available = data.filter((item) => Number(item.value) > 0);

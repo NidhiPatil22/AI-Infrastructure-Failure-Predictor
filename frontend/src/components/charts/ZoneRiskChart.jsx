@@ -6,11 +6,11 @@ export default function ZoneRiskChart({ data = [] }) {
     <div className="chart-area">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
-          <CartesianGrid stroke="#edf1f5" vertical={false} />
-          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#7b8798', fontSize: 11 }} />
-          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#7b8798', fontSize: 11 }} />
-          <Tooltip />
-          <Bar dataKey="value" fill="#38a89a" radius={[5, 5, 0, 0]} />
+          <CartesianGrid stroke="#22344a" vertical={false} />
+          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+          <Tooltip contentStyle={{ backgroundColor: '#0f1722', borderColor: '#22344a', borderRadius: '8px', color: '#fff' }} />
+          <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

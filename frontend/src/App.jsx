@@ -10,23 +10,29 @@ import ModelPerformance from './pages/ModelPerformance.jsx';
 import PredictRisk from './pages/PredictRisk.jsx';
 
 const pageInfo = {
-  '/dashboard': ['City overview', 'A live snapshot of infrastructure health and prediction activity.'],
-  '/predict': ['Predict risk', 'Assess an asset using the model trained by your backend.'],
-  '/analytics': ['Analytics', 'Explore the metrics and clustering insights currently exposed by the API.'],
-  '/model-performance': ['Model performance', 'Review the training metrics available from backend artifacts.'],
-  '/priority': ['Infrastructure priority', 'Review saved prediction history and maintenance guidance.'],
-  '/about': ['About the project', 'A student project exploring predictive maintenance for urban assets.'],
+  '/dashboard': ['Road Infrastructure Project', 'Continuous monitoring of highway corridors, bridges, and municipal assets.'],
+  '/predict': ['Predict Corridor Risk', 'Assess structural deterioration and failure probability using trained ML models.'],
+  '/analytics': ['Infrastructure Analytics', 'Explore clustering insights, silhouette scores, and condition metrics.'],
+  '/model-performance': ['Model Performance', 'Review classification accuracy, regression errors, and model benchmarks.'],
+  '/priority': ['Maintenance Priority Queue', 'Review prioritized infrastructure assets and recommended interventions.'],
+  '/about': ['Project Overview', 'Planning, construction lifecycle, machine learning architecture, and future scope.'],
 };
 
 function NotFound() {
-  return <section className="panel not-found"><span className="eyebrow">404 / NOT FOUND</span><h2>This page is not on the map.</h2><p>Use the navigation to return to the infrastructure workspace.</p></section>;
+  return (
+    <section className="panel not-found">
+      <span className="eyebrow">ROAD HAZARD / ROUTE NOT FOUND</span>
+      <h2>This road is currently closed.</h2>
+      <p>Use the navigation menu to return to the active infrastructure project corridors.</p>
+    </section>
+  );
 }
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const path = location.pathname === '/' ? '/dashboard' : location.pathname;
-  const [title, description] = pageInfo[path] || ['Page not found', ''];
+  const [title, description] = pageInfo[path] || ['Road Infrastructure Project', ''];
 
   return (
     <div className="app-shell">
@@ -44,7 +50,15 @@ export default function App() {
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <footer className="page-footer"><span>AI Urban Infrastructure Failure Predictor</span><span>Predict. Analyze. Prevent.</span></footer>
+          <footer className="page-footer">
+            <div className="footer-brand">
+              <span className="footer-dot-signal green" />
+              <strong>ROAD INFRASTRUCTURE PROJECT</strong>
+            </div>
+            <div className="footer-tagline">
+              <span>Planning</span> · <span>Construction</span> · <span>Progress</span> · <span>Impact</span>
+            </div>
+          </footer>
         </div>
       </main>
     </div>
