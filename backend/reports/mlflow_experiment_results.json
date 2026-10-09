@@ -1,0 +1,107 @@
+[
+  {
+    "experiment_id": "2e69b09774c047068279b75f8824c839",
+    "task": "Classification",
+    "model_name": "Logistic Regression",
+    "parameters": {
+      "max_iter": 1500,
+      "class_weight": "balanced",
+      "solver": "lbfgs"
+    },
+    "accuracy": 0.5591,
+    "precision": 0.6034,
+    "recall": 0.5885,
+    "f1_score": 0.5958,
+    "roc_auc": 0.5915,
+    "train_time_sec": 1.901
+  },
+  {
+    "experiment_id": "e64862537cc7473dbc20dc2061ba8ebc",
+    "task": "Classification",
+    "model_name": "Decision Tree",
+    "parameters": {
+      "max_depth": 7,
+      "min_samples_split": 10,
+      "criterion": "gini"
+    },
+    "accuracy": 0.5659,
+    "precision": 0.625,
+    "recall": 0.535,
+    "f1_score": 0.5765,
+    "roc_auc": 0.5804,
+    "train_time_sec": 0.065
+  },
+  {
+    "experiment_id": "8d330621d08a44d99966c9fc14b7314c",
+    "task": "Classification",
+    "model_name": "Random Forest",
+    "parameters": {
+      "n_estimators": 250,
+      "max_depth": 8,
+      "class_weight": "balanced"
+    },
+    "accuracy": 0.5659,
+    "precision": 0.6111,
+    "recall": 0.5885,
+    "f1_score": 0.5996,
+    "roc_auc": 0.6012,
+    "train_time_sec": 3.626
+  },
+  {
+    "experiment_id": "a41026636c9e44f1a036fa358c345247",
+    "task": "Classification",
+    "model_name": "Gradient Boosting",
+    "parameters": {
+      "n_estimators": 180,
+      "learning_rate": 0.08,
+      "max_depth": 5
+    },
+    "accuracy": 0.5295,
+    "precision": 0.5692,
+    "recall": 0.6091,
+    "f1_score": 0.5885,
+    "roc_auc": 0.5717,
+    "train_time_sec": 7.844
+  },
+  {
+    "experiment_id": "795cdecd1ab84a93ac19ab241048c7fb",
+    "task": "Regression",
+    "model_name": "Linear Regression",
+    "parameters": {
+      "fit_intercept": true
+    },
+    "mae": 0.3004,
+    "mse": 1.2791,
+    "rmse": 1.131,
+    "r2_score": 0.9824,
+    "train_time_sec": 0.036
+  },
+  {
+    "experiment_id": "a93a591efe624fcca5a9cd4c37447d39",
+    "task": "Regression",
+    "model_name": "Ridge Regression",
+    "parameters": {
+      "alpha": 1.5,
+      "fit_intercept": true
+    },
+    "mae": 0.3003,
+    "mse": 1.2789,
+    "rmse": 1.1309,
+    "r2_score": 0.9824,
+    "train_time_sec": 0.011
+  },
+  {
+    "experiment_id": "47860a27d50c4436a8cc93042e85d5bf",
+    "task": "Regression",
+    "model_name": "Random Forest Regressor",
+    "parameters": {
+      "n_estimators": 200,
+      "max_depth": 10
+    },
+    "mae": 0.972,
+    "mse": 2.4971,
+    "rmse": 1.5802,
+    "r2_score": 0.9657,
+    "train_time_sec": 7.833
+  }
+]

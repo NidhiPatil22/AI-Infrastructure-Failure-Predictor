@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import joblib
 import pandas as pd
@@ -9,8 +14,6 @@ import pandas as pd
 from app.ml.classification import train_classification_models
 from app.ml.clustering import train_clustering
 from app.ml.regression import train_regression_models
-
-ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / 'data' / 'urban_infrastructure_data.csv'
 MODEL_DIR = ROOT / 'models'
 MODEL_DIR.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,12 @@
+{
+  "Linear Regression": {
+    "mae": 0.263,
+    "rmse": 0.9497,
+    "r2": 0.9876
+  },
+  "Random Forest Regressor": {
+    "mae": 0.9592,
+    "rmse": 1.4746,
+    "r2": 0.9701
+  }
+}

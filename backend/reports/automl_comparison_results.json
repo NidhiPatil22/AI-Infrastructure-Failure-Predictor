@@ -1,0 +1,86 @@
+{
+  "automl_summary": {
+    "model_type": "AutoML (EXTRA_TREE)",
+    "best_estimator": "extra_tree",
+    "time_budget_seconds": 25,
+    "actual_training_seconds": 25.45,
+    "best_config": {
+      "n_estimators": 9,
+      "max_features": 0.148078776114037,
+      "max_leaves": 4,
+      "criterion": "entropy"
+    },
+    "accuracy": 0.5545,
+    "precision": 0.555,
+    "recall": 0.9753,
+    "f1_score": 0.7075,
+    "roc_auc": 0.5709,
+    "confusion_matrix": [
+      [
+        7,
+        190
+      ],
+      [
+        6,
+        237
+      ]
+    ]
+  },
+  "comparison_table": [
+    {
+      "Model": "Logistic Regression",
+      "Type": "Manual Baseline",
+      "Accuracy": 0.5591,
+      "Precision": 0.6034,
+      "Recall": 0.5885,
+      "F1_Score": 0.5958,
+      "ROC_AUC": 0.5915,
+      "Training_Time_Sec": 1.901
+    },
+    {
+      "Model": "Decision Tree",
+      "Type": "Manual Baseline",
+      "Accuracy": 0.5659,
+      "Precision": 0.625,
+      "Recall": 0.535,
+      "F1_Score": 0.5765,
+      "ROC_AUC": 0.5804,
+      "Training_Time_Sec": 0.065
+    },
+    {
+      "Model": "Random Forest",
+      "Type": "Manual Baseline",
+      "Accuracy": 0.5659,
+      "Precision": 0.6111,
+      "Recall": 0.5885,
+      "F1_Score": 0.5996,
+      "ROC_AUC": 0.6012,
+      "Training_Time_Sec": 3.626
+    },
+    {
+      "Model": "Gradient Boosting",
+      "Type": "Manual Baseline",
+      "Accuracy": 0.5295,
+      "Precision": 0.5692,
+      "Recall": 0.6091,
+      "F1_Score": 0.5885,
+      "ROC_AUC": 0.5717,
+      "Training_Time_Sec": 7.844
+    },
+    {
+      "Model": "AutoML (EXTRA_TREE)",
+      "Type": "AutoML (FLAML)",
+      "Accuracy": 0.5545,
+      "Precision": 0.555,
+      "Recall": 0.9753,
+      "F1_Score": 0.7075,
+      "ROC_AUC": 0.5709,
+      "Training_Time_Sec": 25.45
+    }
+  ],
+  "methodology": {
+    "data_split": "80% Train, 20% Held-out Test (Stratified by failure target)",
+    "leakage_prevention": "Strict train-test isolation: feature imputers, transformations, and model fitting applied only on training split; evaluated once on unseen test fold.",
+    "computational_environment": "CPU training with time-budget bounded search (25s budget)."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "selected_k": 3,
+  "silhouette_values": [
+    {
+      "k": 2,
+      "silhouette_score": 0.3955
+    },
+    {
+      "k": 3,
+      "silhouette_score": 0.3004
+    },
+    {
+      "k": 4,
+      "silhouette_score": 0.2385
+    },
+    {
+      "k": 5,
+      "silhouette_score": 0.223
+    },
+    {
+      "k": 6,
+      "silhouette_score": 0.1987
+    },
+    {
+      "k": 7,
+      "silhouette_score": 0.1927
+    }
+  ],
+  "cluster_summary": [
+    {
+      "cluster_id": 0,
+      "size": 727,
+      "average_age_years": 18.73,
+      "average_traffic_density": 55.17,
+      "average_structural_score": 71.93,
+      "average_days_since_maintenance": 36.72,
+      "average_previous_failures": 1.19,
+      "average_usage_intensity": 57.24,
+      "description": "Healthy Infrastructure"
+    },
+    {
+      "cluster_id": 1,
+      "size": 546,
+      "average_age_years": 18.42,
+      "average_traffic_density": 54.16,
+      "average_structural_score": 70.66,
+      "average_days_since_maintenance": 221.04,
+      "average_previous_failures": 1.15,
+      "average_usage_intensity": 58.97,
+      "description": "Moderate Risk Infrastructure"
+    },
+    {
+      "cluster_id": 2,
+      "size": 927,
+      "average_age_years": 18.74,
+      "average_traffic_density": 54.98,
+      "average_structural_score": 71.99,
+      "average_days_since_maintenance": 125.08,
+      "average_previous_failures": 1.31,
+      "average_usage_intensity": 57.63,
+      "description": "Critical Infrastructure"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -37,7 +38,7 @@ def train_regression_models(df: pd.DataFrame):
         pred = model.predict(X_test_t)
         metrics[name] = {
             'mae': round(float(mean_absolute_error(y_test, pred)), 4),
-            'rmse': round(float(mean_squared_error(y_test, pred, squared=False)), 4),
+            'rmse': round(float(np.sqrt(mean_squared_error(y_test, pred))), 4),
             'r2': round(float(r2_score(y_test, pred)), 4),
         }
 

@@ -1,0 +1,23 @@
+# Directories to exclude from Docker image build
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+.DS_Store
+Thumbs.db
+node_modules
+frontend/dist
+mlruns
+backend/mlruns
+*.log
+backend/data/*.db
+.env
+.idea
+.vscode

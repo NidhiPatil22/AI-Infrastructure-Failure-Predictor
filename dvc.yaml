@@ -1,0 +1,39 @@
+stages:
+  generate_data:
+    cmd: python backend/scripts/generate_data.py
+    deps:
+      - backend/scripts/generate_data.py
+    outs:
+      - backend/data/urban_infrastructure_data.csv
+
+  train_models:
+    cmd: python backend/scripts/train_models.py
+    deps:
+      - backend/data/urban_infrastructure_data.csv
+      - backend/scripts/train_models.py
+      - backend/app/ml/classification.py
+      - backend/app/ml/regression.py
+      - backend/app/ml/clustering.py
+    outs:
+      - backend/models/model_bundle.pkl
+      - backend/models/model_results.json
+      - backend/models/regression_results.json
+      - backend/models/cluster_results.json
+
+  mlflow_tracking:
+    cmd: python backend/scripts/run_mlflow_experiments.py
+    deps:
+      - backend/data/urban_infrastructure_data.csv
+      - backend/scripts/run_mlflow_experiments.py
+    outs:
+      - backend/reports/mlflow_experiment_results.json
+      - backend/reports/mlflow_experiment_summary.csv
+
+  automl_benchmark:
+    cmd: python backend/scripts/train_automl.py
+    deps:
+      - backend/data/urban_infrastructure_data.csv
+      - backend/scripts/train_automl.py
+      - backend/app/ml/automl.py
+    outs:
+      - backend/reports/automl_comparison_results.json

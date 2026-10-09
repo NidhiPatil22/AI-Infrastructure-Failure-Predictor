@@ -1,0 +1,8 @@
+experiment_id,task,model_name,parameters,accuracy,precision,recall,f1_score,roc_auc,train_time_sec,mae,mse,rmse,r2_score
+2e69b09774c047068279b75f8824c839,Classification,Logistic Regression,"{'max_iter': 1500, 'class_weight': 'balanced', 'solver': 'lbfgs'}",0.5591,0.6034,0.5885,0.5958,0.5915,1.901,,,,
+e64862537cc7473dbc20dc2061ba8ebc,Classification,Decision Tree,"{'max_depth': 7, 'min_samples_split': 10, 'criterion': 'gini'}",0.5659,0.625,0.535,0.5765,0.5804,0.065,,,,
+8d330621d08a44d99966c9fc14b7314c,Classification,Random Forest,"{'n_estimators': 250, 'max_depth': 8, 'class_weight': 'balanced'}",0.5659,0.6111,0.5885,0.5996,0.6012,3.626,,,,
+a41026636c9e44f1a036fa358c345247,Classification,Gradient Boosting,"{'n_estimators': 180, 'learning_rate': 0.08, 'max_depth': 5}",0.5295,0.5692,0.6091,0.5885,0.5717,7.844,,,,
+795cdecd1ab84a93ac19ab241048c7fb,Regression,Linear Regression,{'fit_intercept': True},,,,,,0.036,0.3004,1.2791,1.131,0.9824
+a93a591efe624fcca5a9cd4c37447d39,Regression,Ridge Regression,"{'alpha': 1.5, 'fit_intercept': True}",,,,,,0.011,0.3003,1.2789,1.1309,0.9824
+47860a27d50c4436a8cc93042e85d5bf,Regression,Random Forest Regressor,"{'n_estimators': 200, 'max_depth': 10}",,,,,,7.833,0.972,2.4971,1.5802,0.9657
