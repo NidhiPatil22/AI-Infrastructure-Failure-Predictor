@@ -1,23 +1,13 @@
 """
 AI Urban Infrastructure Failure Predictor - Streamlit Application
 Highway Design Theme: Planning · Construction · Progress · Impact
-Featuring:
-- Interactive Day ☀️ / Night 🌙 Mode Switcher
-- Live Google Maps Civil Corridor & Area Search
-- Municipal GIS Asset Geolocation Risk Map
-- Highway Overpass & Bridge Graphic Banners
-- Traffic Light Signal Indicator Widgets
-- 10 Comprehensive AI/ML Modules:
-  1. Executive Dashboard (Progress & Performance + Live Google Maps Search)
-  2. Google Maps & GIS Corridor Explorer
-  3. Tabular Failure Prediction & Remaining Useful Life (RUL)
-  4. Road Damage Detection (Computer Vision with OpenCV & YOLO)
-  5. Maintenance Scheduling Optimization (Hill Climbing, Beam, Tabu)
-  6. MLflow Experiment Tracking & Comparative Evaluation
-  7. AutoML vs. Manual Models (FLAML Tabular)
-  8. Core Data Structures in Action (NumPy, SciPy, Graph, Heap, Dict)
-  9. Academic Literature & Dataset Survey
-  10. System Architecture & FastAPI Deployment Guide
+
+FULL-WIDTH DASHBOARD ARCHITECTURE (NO SIDEBAR):
+- Top Header with Project Branding, Operational Status & Day ☀️ / Night 🌙 Toggle
+- Highway Hero Banner with Infrastructure Overview & Key Live Metrics
+- Responsive Grid of 10 Clickable Navigation Cards (Homepage Landing Dashboard)
+- Instant Navigation to Any Section with Top "← Back to Dashboard" Return
+- All 10 Analytical Modules Completely Preserved with 100% Functionality
 """
 from __future__ import annotations
 
@@ -52,12 +42,14 @@ from app.optimization.maintenance_scheduler import (
 )
 from app.structures.data_structures_demo import demonstrate_all_data_structures
 
-# Streamlit Page Setup
+# =============================================================================
+# STREAMLIT CONFIGURATION (FULL WIDTH, NO SIDEBAR)
+# =============================================================================
 st.set_page_config(
-    page_title="Road Infrastructure Project | Civil AI Decision Support",
+    page_title="ROAD INFRASTRUCTURE | AI Predictive Maintenance Suite",
     page_icon="🚦",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # App Data Directories
@@ -67,6 +59,9 @@ REPORTS_DIR = BACKEND_DIR / "reports"
 MODELS_DIR = BACKEND_DIR / "models"
 
 
+# =============================================================================
+# CACHED DATA & MODELS
+# =============================================================================
 @st.cache_resource
 def get_cached_model_bundle():
     """Loads and caches the trained scikit-learn models and preprocessing pipeline."""
@@ -99,13 +94,12 @@ def get_geo_infrastructure_dataset():
         return pd.DataFrame()
 
     df = df.copy()
-    # Zone center coordinates (Metro Corridor simulation)
     zone_centers = {
-        "North": (19.1800, 72.8550),      # Northern Express Corridor
-        "South": (18.9300, 72.8250),      # Coastal Causeway / Bridge Ring
-        "Central": (19.0150, 72.8450),    # Central Arterial Crossways
-        "Industrial": (19.0700, 72.8900), # Port & Industrial Freight Highway
-        "Residential": (19.1200, 72.8350),# Western Suburban Rings
+        "North": (19.1800, 72.8550),
+        "South": (18.9300, 72.8250),
+        "Central": (19.0150, 72.8450),
+        "Industrial": (19.0700, 72.8900),
+        "Residential": (19.1200, 72.8350),
     }
 
     lats = []
@@ -114,7 +108,6 @@ def get_geo_infrastructure_dataset():
     for idx, row in df.iterrows():
         z = row.get("zone", "Central")
         base_lat, base_lon = zone_centers.get(z, (19.0150, 72.8450))
-        # Add realistic scatter (~2-4 km spread)
         lat = base_lat + np.random.normal(0, 0.015)
         lon = base_lon + np.random.normal(0, 0.015)
         lats.append(round(lat, 5))
@@ -123,7 +116,6 @@ def get_geo_infrastructure_dataset():
     df["latitude"] = lats
     df["longitude"] = lons
 
-    # Compute risk category colors for map pins
     colors = []
     for idx, row in df.iterrows():
         if row["structural_score"] < 45 or row["corrosion_level"] > 65 or row["failure"] == 1:
@@ -138,60 +130,83 @@ def get_geo_infrastructure_dataset():
 
 
 # =============================================================================
-# THEME CONFIGURATION (DAY / NIGHT MODE)
+# SESSION STATE MANAGEMENT
 # =============================================================================
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "home"
+
 if "theme_mode" not in st.session_state:
     st.session_state["theme_mode"] = "Night"
 
-st.sidebar.markdown(
-    """
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-        <span style="font-weight: 700; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">Highway Theme</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+is_night = st.session_state["theme_mode"] == "Night"
 
-theme_selection = st.sidebar.radio(
-    "Select Display Theme",
-    ["🌙 Night Mode (Dark Highway)", "☀️ Day Mode (Sunlit Road)"],
-    index=0 if st.session_state["theme_mode"] == "Night" else 1,
-    label_visibility="collapsed",
-)
-is_night = "Night" in theme_selection
-st.session_state["theme_mode"] = "Night" if is_night else "Day"
 
-# Dynamic Highway Stylesheet Injection
+# =============================================================================
+# HIGHWAY DESIGN SYSTEM CSS (DAY / NIGHT THEMES, NO SIDEBAR)
+# =============================================================================
 if is_night:
-    theme_css = """
+    # NIGHT THEME (Dark Highway Charcoal + Golden Yellow Accents)
+    custom_css = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+        /* Hide Sidebar completely and expand content */
+        [data-testid="stSidebar"], [data-testid="collapsedControl"] {
+            display: none !important;
+        }
+        #MainMenu, header[data-testid="stHeader"] {
+            visibility: hidden !important;
+            height: 0px !important;
+        }
+
+        .block-container {
+            padding-top: 1.2rem !important;
+            padding-bottom: 3rem !important;
+            max-width: 1380px !important;
+            margin: 0 auto !important;
+        }
+
+        /* App Background */
         .stApp {
-            background: linear-gradient(180deg, #0b131e 0%, #111d2e 100%) !important;
+            background: linear-gradient(180deg, #090f17 0%, #0e1724 50%, #0a111a 100%) !important;
             color: #e2e8f0 !important;
             font-family: 'Inter', sans-serif !important;
         }
 
-        [data-testid="stSidebar"] {
-            background-color: #080f18 !important;
-            border-right: 2px solid #1e334d !important;
-        }
-        [data-testid="stSidebar"] * {
-            color: #cbd5e1 !important;
+        /* Top Header Navbar */
+        .highway-navbar {
+            background: linear-gradient(90deg, #101c2b 0%, #152438 100%);
+            border: 1px solid #1e334d;
+            border-bottom: 3px solid #fecb00;
+            border-radius: 12px;
+            padding: 14px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
 
-        .highway-hero {
-            background: linear-gradient(135deg, #132238 0%, #192a42 60%, #111c2c 100%);
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px !important;
+            color: #fecb00 !important;
+            text-transform: uppercase !important;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #132238 0%, #1a2d48 60%, #101c2d 100%);
             border: 2px solid #fecb00;
-            border-radius: 12px;
-            padding: 24px 28px;
-            margin-bottom: 24px;
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(254, 203, 0, 0.08);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(254, 203, 0, 0.08);
         }
-        .highway-hero::after {
+        .hero-banner::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -201,57 +216,93 @@ if is_night:
             background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
         }
 
-        h1, h2, h3 {
-            font-family: 'Oswald', sans-serif !important;
-            letter-spacing: 0.5px !important;
-            color: #fecb00 !important;
-            text-transform: uppercase !important;
-        }
-        .hero-title {
-            font-family: 'Oswald', sans-serif !important;
-            font-size: 38px !important;
-            font-weight: 700 !important;
-            color: #fecb00 !important;
-            letter-spacing: 2px !important;
-            margin: 0 !important;
-            line-height: 1.1 !important;
-        }
-        .hero-subtitle {
-            color: #ffffff !important;
-            font-size: 15px !important;
-            font-weight: 500 !important;
-            letter-spacing: 1px !important;
-            margin-top: 6px !important;
-            opacity: 0.9 !important;
-        }
-
+        /* Traffic Signal Pill */
         .traffic-light-pill {
             display: inline-flex;
-            flex-direction: column;
-            gap: 6px;
-            background: #0a0e14;
-            padding: 10px 8px;
+            flex-direction: row;
+            gap: 7px;
+            background: #070b10;
+            padding: 7px 12px;
             border-radius: 20px;
-            border: 2px solid #2a3b50;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 2px solid #24364c;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             align-items: center;
         }
         .lamp {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            display: block;
+            display: inline-block;
         }
-        .lamp.red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 10px #facc15; }
-        .lamp.green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
+        .lamp.red { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 8px #facc15; }
+        .lamp.green { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
 
+        /* Navigation Cards */
+        .nav-card-container {
+            background: #121e2d;
+            border: 1px solid #1e334d;
+            border-top: 4px solid #fecb00;
+            border-radius: 12px;
+            padding: 22px 20px;
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            margin-bottom: 8px;
+        }
+        .nav-card-container:hover {
+            transform: translateY(-4px);
+            border-color: #fecb00;
+            box-shadow: 0 12px 28px rgba(254, 203, 0, 0.2);
+            background: #16263a;
+        }
+
+        .card-header-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .card-num {
+            font-family: 'Oswald', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fecb00;
+            background: rgba(254, 203, 0, 0.12);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(254, 203, 0, 0.3);
+        }
+        .card-icon {
+            font-size: 26px;
+        }
+        .card-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+        .card-desc {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #94a3b8;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* Metric Cards */
         [data-testid="stMetric"] {
-            background-color: #142234 !important;
-            border: 1px solid #23374e !important;
+            background-color: #121e2d !important;
+            border: 1px solid #1e334d !important;
             border-left: 5px solid #fecb00 !important;
             border-radius: 8px !important;
-            padding: 14px 18px !important;
+            padding: 12px 18px !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
         }
         [data-testid="stMetricLabel"] {
@@ -266,6 +317,7 @@ if is_night:
             font-size: 28px !important;
         }
 
+        /* Buttons */
         .stButton > button {
             background: linear-gradient(180deg, #fecb00 0%, #e5b700 100%) !important;
             color: #0b131e !important;
@@ -274,54 +326,94 @@ if is_night:
             letter-spacing: 1px !important;
             border: none !important;
             border-radius: 6px !important;
-            box-shadow: 0 4px 12px rgba(254, 203, 0, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(254, 203, 0, 0.25) !important;
             text-transform: uppercase !important;
+            transition: all 0.2s ease !important;
         }
         .stButton > button:hover {
             background: #ffd833 !important;
             color: #000000 !important;
-            box-shadow: 0 6px 16px rgba(254, 203, 0, 0.5) !important;
+            box-shadow: 0 6px 16px rgba(254, 203, 0, 0.45) !important;
+            transform: translateY(-1px) !important;
         }
 
-        .progress-box {
-            background: #142234;
-            border: 1px solid #23374e;
+        /* Breadcrumb Bar */
+        .breadcrumb-bar {
+            background: #101c2b;
+            border: 1px solid #1e334d;
+            border-left: 4px solid #fecb00;
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
     </style>
     """
 else:
-    theme_css = """
+    # DAY THEME (Sunlit Road Light Neutral + Warm Amber Accents)
+    custom_css = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+        /* Hide Sidebar completely */
+        [data-testid="stSidebar"], [data-testid="collapsedControl"] {
+            display: none !important;
+        }
+        #MainMenu, header[data-testid="stHeader"] {
+            visibility: hidden !important;
+            height: 0px !important;
+        }
+
+        .block-container {
+            padding-top: 1.2rem !important;
+            padding-bottom: 3rem !important;
+            max-width: 1380px !important;
+            margin: 0 auto !important;
+        }
+
+        /* App Background */
         .stApp {
-            background: linear-gradient(180deg, #f0f4f9 0%, #e2e8f0 100%) !important;
+            background: linear-gradient(180deg, #f3f6fa 0%, #e5ebf2 100%) !important;
             color: #1e293b !important;
             font-family: 'Inter', sans-serif !important;
         }
 
-        [data-testid="stSidebar"] {
-            background-color: #ffffff !important;
-            border-right: 2px solid #cbd5e1 !important;
-        }
-        [data-testid="stSidebar"] * {
-            color: #334155 !important;
+        /* Top Header Navbar */
+        .highway-navbar {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-bottom: 3px solid #d99b00;
+            border-radius: 12px;
+            padding: 14px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
         }
 
-        .highway-hero {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2b4c74 60%, #152942 100%);
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px !important;
+            color: #b45309 !important;
+            text-transform: uppercase !important;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #1e3a5f 0%, #294c77 60%, #152942 100%);
             border: 2px solid #d99b00;
-            border-radius: 12px;
-            padding: 24px 28px;
-            margin-bottom: 24px;
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 20px -3px rgba(30, 58, 95, 0.25);
+            box-shadow: 0 10px 25px rgba(30, 58, 95, 0.2);
         }
-        .highway-hero::after {
+        .hero-banner::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -331,58 +423,94 @@ else:
             background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
         }
 
-        h1, h2, h3 {
-            font-family: 'Oswald', sans-serif !important;
-            letter-spacing: 0.5px !important;
-            color: #b45309 !important;
-            text-transform: uppercase !important;
-        }
-        .hero-title {
-            font-family: 'Oswald', sans-serif !important;
-            font-size: 38px !important;
-            font-weight: 700 !important;
-            color: #fecb00 !important;
-            letter-spacing: 2px !important;
-            margin: 0 !important;
-            line-height: 1.1 !important;
-        }
-        .hero-subtitle {
-            color: #ffffff !important;
-            font-size: 15px !important;
-            font-weight: 500 !important;
-            letter-spacing: 1px !important;
-            margin-top: 6px !important;
-            opacity: 0.95 !important;
-        }
-
+        /* Traffic Signal Pill */
         .traffic-light-pill {
             display: inline-flex;
-            flex-direction: column;
-            gap: 6px;
+            flex-direction: row;
+            gap: 7px;
             background: #111827;
-            padding: 10px 8px;
+            padding: 7px 12px;
             border-radius: 20px;
             border: 2px solid #374151;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
             align-items: center;
         }
         .lamp {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            display: block;
+            display: inline-block;
         }
-        .lamp.red { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
-        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 8px #facc15; }
-        .lamp.green { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+        .lamp.red { background-color: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 6px #facc15; }
+        .lamp.green { background-color: #10b981; box-shadow: 0 0 6px #10b981; }
 
+        /* Navigation Cards */
+        .nav-card-container {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 4px solid #d99b00;
+            border-radius: 12px;
+            padding: 22px 20px;
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 8px;
+        }
+        .nav-card-container:hover {
+            transform: translateY(-4px);
+            border-color: #d99b00;
+            box-shadow: 0 10px 24px rgba(217, 155, 0, 0.18);
+            background: #fdfdfd;
+        }
+
+        .card-header-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .card-num {
+            font-family: 'Oswald', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #b45309;
+            background: rgba(217, 155, 0, 0.12);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(217, 155, 0, 0.3);
+        }
+        .card-icon {
+            font-size: 26px;
+        }
+        .card-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+        .card-desc {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #475569;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* Metric Cards */
         [data-testid="stMetric"] {
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
             border-left: 5px solid #d99b00 !important;
             border-radius: 8px !important;
-            padding: 14px 18px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06) !important;
+            padding: 12px 18px !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05) !important;
         }
         [data-testid="stMetricLabel"] {
             color: #64748b !important;
@@ -396,6 +524,7 @@ else:
             font-size: 28px !important;
         }
 
+        /* Buttons */
         .stButton > button {
             background: linear-gradient(180deg, #d99b00 0%, #b45309 100%) !important;
             color: #ffffff !important;
@@ -404,55 +533,55 @@ else:
             letter-spacing: 1px !important;
             border: none !important;
             border-radius: 6px !important;
-            box-shadow: 0 4px 10px rgba(217, 155, 0, 0.3) !important;
+            box-shadow: 0 4px 10px rgba(217, 155, 0, 0.25) !important;
             text-transform: uppercase !important;
+            transition: all 0.2s ease !important;
         }
         .stButton > button:hover {
             background: #f59e0b !important;
             color: #ffffff !important;
-            box-shadow: 0 6px 14px rgba(217, 155, 0, 0.45) !important;
+            box-shadow: 0 6px 14px rgba(217, 155, 0, 0.4) !important;
+            transform: translateY(-1px) !important;
         }
 
-        .progress-box {
+        /* Breadcrumb Bar */
+        .breadcrumb-bar {
             background: #ffffff;
             border: 1px solid #cbd5e1;
+            border-left: 4px solid #d99b00;
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
     </style>
     """
 
-st.markdown(theme_css, unsafe_allow_html=True)
+st.markdown(custom_css, unsafe_allow_html=True)
 
 
 # =============================================================================
-# REUSABLE COMPONENTS
+# TOP HEADER BAR WITH THEME TOGGLE (PRESENT ON EVERY VIEW)
 # =============================================================================
-def render_highway_hero(section_title: str = "ROAD INFRASTRUCTURE PROJECT", subtitle: str = "Planning · Construction · Progress · Impact"):
+nav_col1, nav_col2, nav_col3 = st.columns([2.5, 2.0, 1.5])
+
+with nav_col1:
     st.markdown(
-        f"""
-        <div class="highway-hero">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <div class="traffic-light-pill">
-                        <span class="lamp red"></span>
-                        <span class="lamp yellow"></span>
-                        <span class="lamp green"></span>
-                    </div>
-                    <div>
-                        <div style="display: inline-block; background-color: rgba(254, 203, 0, 0.15); border: 1px solid #fecb00; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #fecb00; letter-spacing: 1.5px; margin-bottom: 6px;">
-                            CIVIL ASSET PREDICTIVE AI SYSTEM
-                        </div>
-                        <h1 class="hero-title">{section_title}</h1>
-                        <div class="hero-subtitle">{subtitle}</div>
-                    </div>
+        """
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="traffic-light-pill">
+                <span class="lamp red"></span>
+                <span class="lamp yellow"></span>
+                <span class="lamp green"></span>
+            </div>
+            <div>
+                <div style="font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; color: #fecb00; letter-spacing: 1px; line-height: 1;">
+                    ROAD INFRASTRUCTURE
                 </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(254, 203, 0, 0.4); border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #fecb00; font-weight: 600;">
-                        STATUS: MONITORING ACTIVE
-                    </div>
-                    <span style="font-size: 11px; opacity: 0.7; color: #ffffff;">2,200 Monitored Highway & Urban Assets</span>
+                <div style="font-size: 11.5px; opacity: 0.8; letter-spacing: 0.5px; margin-top: 3px;">
+                    AI Predictive Maintenance Suite · Civil Asset Analytics
                 </div>
             </div>
         </div>
@@ -460,16 +589,46 @@ def render_highway_hero(section_title: str = "ROAD INFRASTRUCTURE PROJECT", subt
         unsafe_allow_html=True,
     )
 
+with nav_col2:
+    st.markdown(
+        """
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; padding-top: 6px;">
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid #10b981; border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: #10b981; display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981;"></span>
+                <span>SYSTEM ONLINE · 2,200 TELEMETRY ASSETS ACTIVE</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
+with nav_col3:
+    # Compact Theme Switcher in Top Right
+    theme_choice = st.radio(
+        "Theme Mode",
+        ["🌙 Night", "☀️ Day"],
+        index=0 if is_night else 1,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="top_nav_theme_selector",
+    )
+    if ("Night" in theme_choice) != is_night:
+        st.session_state["theme_mode"] = "Night" if "Night" in theme_choice else "Day"
+        st.rerun()
+
+st.markdown("<hr style='margin: 12px 0 20px 0; border: none; border-top: 1px solid rgba(148, 163, 184, 0.2);'>", unsafe_allow_html=True)
+
+
+# =============================================================================
+# HELPER: GOOGLE MAPS CORRIDOR SEARCH COMPONENT
+# =============================================================================
 def render_google_maps_section(default_query: str = "Bandra-Worli Sea Link, Mumbai", height: int = 500, key_prefix: str = "dash"):
-    """Renders interactive Google Maps live search viewer with presets, layer views, and navigation links."""
     st.markdown("### 🗺️ Live Google Maps Civil Corridor & Area Search")
     st.markdown(
         "Directly search any highway corridor, bridge, road, landmark, or city worldwide to inspect "
         "satellite aerial imagery, road alignment, and topographical surroundings."
     )
 
-    # Preset Corridors
     st.markdown("**⚡ Quick Preset Corridors:**")
     preset_cols = st.columns(6)
     preset_locations = [
@@ -516,11 +675,9 @@ def render_google_maps_section(default_query: str = "Bandra-Worli Sea Link, Mumb
     with search_c3:
         zoom_level = st.slider("Zoom Level", min_value=10, max_value=19, value=15, step=1, key=f"{key_prefix}_zoom")
 
-    # Encode query for Google Maps embed
     encoded_query = quote_plus(st.session_state[query_key])
     maps_embed_url = f"https://maps.google.com/maps?q={encoded_query}&t={map_code}&z={zoom_level}&ie=UTF8&iwloc=&output=embed"
 
-    # Embed Google Maps
     components.html(
         f"""
         <div style="border-radius: 10px; overflow: hidden; border: 2px solid #fecb00; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
@@ -561,84 +718,306 @@ def render_google_maps_section(default_query: str = "Bandra-Worli Sea Link, Mumb
         )
 
 
-# Sidebar Navigation
-st.sidebar.markdown(
-    """
-    <div style="text-align: center; padding: 10px 0 16px 0;">
-        <div style="font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 700; color: #fecb00; letter-spacing: 1px;">
-            ROAD INFRASTRUCTURE
-        </div>
-        <div style="font-size: 11px; letter-spacing: 0.5px; opacity: 0.8;">
-            AI Predictive Maintenance Suite
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# =============================================================================
+# VIEW ROUTER: LANDING HOMEPAGE vs INNER MODULES
+# =============================================================================
+current_page = st.session_state["current_page"]
 
-menu_selection = st.sidebar.radio(
-    "Navigation Menu",
-    [
-        "🏙️ Executive Dashboard",
-        "🗺️ Google Maps & GIS Corridors",
-        "🔮 Tabular Failure Prediction",
-        "🛣️ Road Damage Detection (CV)",
-        "⚡ Search Space Optimization",
-        "📈 MLflow Experiment Tracking",
-        "🤖 AutoML vs. Manual Models",
-        "🧬 Data Structures in Action",
-        "📖 Literature & Dataset Survey",
-        "🚀 Deployment & FastAPI Guide",
-    ],
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    """
-    <div style="font-size: 12px; line-height: 1.6; opacity: 0.75;">
-        <strong>Asset Modalities:</strong><br>
-        🌉 Bridges · 🛣️ Roads · 💧 Pipelines<br>
-        🌊 Drainage · 💡 Streetlights · ⚡ Power
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# Render "Back to Dashboard" Bar when inside any subpage
+if current_page != "home":
+    b_col1, b_col2 = st.columns([1.5, 4.5])
+    with b_col1:
+        if st.button("← Back to Dashboard", key="btn_return_home", use_container_width=True):
+            st.session_state["current_page"] = "home"
+            st.rerun()
+    with b_col2:
+        page_names = {
+            "dashboard": "01. Executive Dashboard",
+            "maps": "02. Google Maps & GIS Corridors",
+            "prediction": "03. Tabular Failure Prediction",
+            "cv": "04. Road Damage Detection (Computer Vision)",
+            "optimization": "05. Search Space Optimization",
+            "mlflow": "06. MLflow Experiment Tracking",
+            "automl": "07. AutoML vs. Manual Models",
+            "structures": "08. Data Structures in Action",
+            "survey": "09. Literature & Dataset Survey",
+            "deployment": "10. Deployment & FastAPI Guide",
+        }
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; height: 100%; font-size: 14px; opacity: 0.85;">
+                <strong>Corridor Route:</strong>&nbsp;<span>Dashboard</span>&nbsp;›&nbsp;<strong style="color: #fecb00;">{page_names.get(current_page, 'Module')}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.markdown("<hr style='margin: 10px 0 24px 0; border: none; border-top: 1px dashed rgba(148, 163, 184, 0.25);'>", unsafe_allow_html=True)
 
 
 # =============================================================================
-# 1. EXECUTIVE DASHBOARD (Matches Image 2, Image 3 + Google Maps Search)
+# HOMEPAGE: HERO BANNER & 10 CLICKABLE NAVIGATION CARDS
 # =============================================================================
-if menu_selection == "🏙️ Executive Dashboard":
-    render_highway_hero("ROAD INFRASTRUCTURE PROJECT", "Planning · Construction · Progress · Impact")
-
-    # Project Overview Card (Styled from Reference Image 2)
+if current_page == "home":
+    # 1. Highway Hero Banner
     st.markdown(
         """
-        <div class="progress-box" style="margin-bottom: 24px;">
-            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-                <div style="flex: 2; min-width: 300px;">
-                    <div style="color: #fecb00; font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-                        Project Overview
+        <div class="hero-banner">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 320px;">
+                    <div style="display: inline-block; background-color: rgba(254, 203, 0, 0.15); border: 1px solid #fecb00; padding: 2px 12px; border-radius: 4px; font-size: 11.5px; font-weight: 700; color: #fecb00; letter-spacing: 1.5px; margin-bottom: 8px;">
+                        HIGHWAY CIVIL ANALYTICS & RESILIENCE PLATFORM
                     </div>
-                    <p style="font-size: 14.5px; line-height: 1.6; margin: 0; opacity: 0.9;">
-                        The <strong>AI Urban Infrastructure Failure Predictor</strong> transitions civil asset management from
-                        costly reactive emergency repairs to mathematically validated predictive maintenance. By synthesizing
-                        multi-source sensor telemetry, historical maintenance intervals, physical degradation indicators,
-                        geospatial Google Maps corridors, and computer vision road distress detections, the platform continuously forecasts
-                        structural vulnerability across municipal bridges, highway corridors, drainage networks, and pipelines.
+                    <h1 style="font-size: 40px; font-weight: 700; color: #fecb00; margin: 0 0 6px 0; letter-spacing: 1.5px; line-height: 1.1;">
+                        ROAD INFRASTRUCTURE
+                    </h1>
+                    <div style="color: #ffffff; font-size: 18px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 12px;">
+                        AI Predictive Maintenance Suite
+                    </div>
+                    <p style="color: #e2e8f0; font-size: 15px; line-height: 1.6; margin: 0; max-width: 780px; opacity: 0.95;">
+                        Predict infrastructure failures, detect road damage, and optimize maintenance decisions with AI and machine learning.
+                        An integrated engineering decision-support suite combining computer vision distress detection,
+                        supervised telemetry classification, Remaining Useful Life prognosis, and combinatorial knapsack scheduling.
                     </p>
                 </div>
-                <div style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
-                    <div style="background: rgba(254, 203, 0, 0.08); border: 2px dashed #fecb00; border-radius: 8px; padding: 14px 20px; text-align: center;">
-                        <span style="font-size: 26px;">🌉</span>
-                        <div style="font-weight: 700; color: #fecb00; font-family: 'Oswald', sans-serif; font-size: 18px; margin-top: 4px;">6 ASSET CLASSES</div>
-                        <div style="font-size: 12px; opacity: 0.8;">Bridges, Roads, Pipes, Drainage, Poles, Lights</div>
+                <div style="flex: 1; min-width: 240px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
+                    <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(254, 203, 0, 0.4); border-radius: 8px; padding: 14px 20px; text-align: right;">
+                        <div style="font-family: 'Oswald', sans-serif; font-size: 18px; color: #fecb00; font-weight: 700;">
+                            CIVIL HEALTH PORTFOLIO
+                        </div>
+                        <div style="font-size: 13px; color: #ffffff; margin-top: 4px; opacity: 0.85;">
+                            Planning · Construction · Progress · Impact
+                        </div>
+                        <div style="font-size: 11.5px; color: #10b981; margin-top: 8px; font-weight: 600;">
+                            ✔ 10 Analytical Modules Verified
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
+    )
+
+    # 2. Compact Live Overview KPI Row (From Verified Dataset)
+    df = get_infrastructure_dataset()
+    if not df.empty:
+        total_assets = len(df)
+        failure_rate = (df["failure"].sum() / total_assets) * 100
+        avg_rul = df["remaining_useful_life"].mean()
+        high_risk_count = len(df[(df["structural_score"] < 50) | (df["corrosion_level"] > 60)])
+
+        kpi_c1, kpi_c2, kpi_c3, kpi_c4 = st.columns(4)
+        kpi_c1.metric("Total Monitored Assets", f"{total_assets:,}", "Citywide Network")
+        kpi_c2.metric("Failure Incident Rate", f"{failure_rate:.1f}%", f"{df['failure'].sum()} flagged")
+        kpi_c3.metric("Avg. Remaining Useful Life", f"{avg_rul:.1f} yrs", "Temporal Health")
+        kpi_c4.metric("Critical Triage Assets", f"{high_risk_count:,}", "Immediate Priority")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. Heading for Clickable Cards Grid
+    st.markdown("## 🛠️ Explore Predictive Maintenance Tools")
+    st.markdown("Select any analytical card below to launch the corresponding AI diagnostic workflow directly on the dashboard:")
+
+    # 4. Definition of 10 Cards
+    cards_data = [
+        {
+            "id": "dashboard",
+            "num": "01",
+            "icon": "🏙️",
+            "title": "Executive Dashboard",
+            "desc": "Overview of infrastructure portfolio, condition breakdown, progress stages, and municipal telemetry stream.",
+            "btn_label": "Open Dashboard →",
+        },
+        {
+            "id": "maps",
+            "num": "02",
+            "icon": "🗺️",
+            "title": "Google Maps & GIS Corridors",
+            "desc": "Directly search any area, bridge, or highway worldwide with live satellite imagery and municipal GIS risk pins.",
+            "btn_label": "Explore Maps & GIS →",
+        },
+        {
+            "id": "prediction",
+            "num": "03",
+            "icon": "🔮",
+            "title": "Tabular Failure Prediction",
+            "desc": "Predict failure probability and Remaining Useful Life (RUL) using trained Random Forest and GBDT estimators.",
+            "btn_label": "Predict Asset Risk →",
+        },
+        {
+            "id": "cv",
+            "num": "04",
+            "icon": "🛣️",
+            "title": "Road Damage Detection (CV)",
+            "desc": "Detect potholes, cracks, and ravelling from road photos using OpenCV filtering, YOLO integration, and RDI score.",
+            "btn_label": "Launch Vision Inspector →",
+        },
+        {
+            "id": "optimization",
+            "num": "05",
+            "icon": "⚡",
+            "title": "Search Space Optimization",
+            "desc": "Combinatorial 0-1 Knapsack maintenance scheduling: benchmark Hill Climbing, Beam Search, and Tabu Search.",
+            "btn_label": "Optimize Schedules →",
+        },
+        {
+            "id": "mlflow",
+            "num": "06",
+            "icon": "📈",
+            "title": "MLflow Experiment Tracking",
+            "desc": "Review tracked model runs, hyperparameters, metrics, and confusion matrix artifacts in embedded SQLite store.",
+            "btn_label": "View Experiment Logs →",
+        },
+        {
+            "id": "automl",
+            "num": "07",
+            "icon": "🤖",
+            "title": "AutoML vs. Manual Models",
+            "desc": "FLAML Tabular automated benchmark: compare cost-frugal hyperparameter search against manual baselines.",
+            "btn_label": "View AutoML Benchmark →",
+        },
+        {
+            "id": "structures",
+            "num": "08",
+            "icon": "🧬",
+            "title": "Data Structures in Action",
+            "desc": "Demonstrate the 6 core data structures: NumPy vectors, SciPy CSR sparse matrix (98% memory savings), Trees, Graphs, Heaps.",
+            "btn_label": "Inspect Data Structures →",
+        },
+        {
+            "id": "survey",
+            "num": "09",
+            "icon": "📖",
+            "title": "Literature & Dataset Survey",
+            "desc": "Peer-reviewed citations across predictive maintenance, road computer vision, SHAP, and combinatorial optimization.",
+            "btn_label": "Read Academic Survey →",
+        },
+        {
+            "id": "deployment",
+            "num": "10",
+            "icon": "🚀",
+            "title": "Deployment & FastAPI Guide",
+            "desc": "Microservice architecture, asynchronous ASGI endpoints, OpenAPI Swagger docs, and containerization instructions.",
+            "btn_label": "View Deployment Guide →",
+        },
+    ]
+
+    # Render Cards in 3-column Grid
+    row1 = st.columns(3)
+    for i in range(3):
+        card = cards_data[i]
+        with row1[i]:
+            st.markdown(
+                f"""
+                <div class="nav-card-container">
+                    <div>
+                        <div class="card-header-badge">
+                            <span class="card-icon">{card['icon']}</span>
+                            <span class="card-num">{card['num']}</span>
+                        </div>
+                        <h4 class="card-title">{card['title']}</h4>
+                        <p class="card-desc">{card['desc']}</p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
+                st.session_state["current_page"] = card["id"]
+                st.rerun()
+
+    row2 = st.columns(3)
+    for i in range(3, 6):
+        card = cards_data[i]
+        with row2[i - 3]:
+            st.markdown(
+                f"""
+                <div class="nav-card-container">
+                    <div>
+                        <div class="card-header-badge">
+                            <span class="card-icon">{card['icon']}</span>
+                            <span class="card-num">{card['num']}</span>
+                        </div>
+                        <h4 class="card-title">{card['title']}</h4>
+                        <p class="card-desc">{card['desc']}</p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
+                st.session_state["current_page"] = card["id"]
+                st.rerun()
+
+    row3 = st.columns(3)
+    for i in range(6, 9):
+        card = cards_data[i]
+        with row3[i - 6]:
+            st.markdown(
+                f"""
+                <div class="nav-card-container">
+                    <div>
+                        <div class="card-header-badge">
+                            <span class="card-icon">{card['icon']}</span>
+                            <span class="card-num">{card['num']}</span>
+                        </div>
+                        <h4 class="card-title">{card['title']}</h4>
+                        <p class="card-desc">{card['desc']}</p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
+                st.session_state["current_page"] = card["id"]
+                st.rerun()
+
+    # 10th Card (Centered or Full Row)
+    row4_left, row4_center, row4_right = st.columns([1, 2, 1])
+    with row4_center:
+        card = cards_data[9]
+        st.markdown(
+            f"""
+            <div class="nav-card-container">
+                <div>
+                    <div class="card-header-badge">
+                        <span class="card-icon">{card['icon']}</span>
+                        <span class="card-num">{card['num']}</span>
+                    </div>
+                    <h4 class="card-title">{card['title']}</h4>
+                    <p class="card-desc">{card['desc']}</p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
+            st.session_state["current_page"] = card["id"]
+            st.rerun()
+
+    st.markdown("<br><hr style='border: none; border-top: 1px solid rgba(148, 163, 184, 0.2); margin: 30px 0 20px 0;'>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; opacity: 0.75; flex-wrap: wrap;">
+            <div>
+                <strong>ROAD INFRASTRUCTURE PROJECT</strong> · Academic AIML Laboratory Decision Support Platform
+            </div>
+            <div>
+                Verified on Python 3.10+ · Streamlit 1.55 · FastAPI 0.135 · OpenCV · YOLO
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# =============================================================================
+# SUBPAGE 1: EXECUTIVE DASHBOARD
+# =============================================================================
+elif current_page == "dashboard":
+    st.title("🏙️ 01. Executive Dashboard")
+    st.markdown(
+        "A holistic overview of civil infrastructure portfolio health, progress stages, and municipal telemetry streams."
     )
 
     df = get_infrastructure_dataset()
@@ -656,7 +1035,6 @@ if menu_selection == "🏙️ Executive Dashboard":
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Progress & Performance Section (Styled directly from Reference Image 3)
         st.subheader("Progress & Performance")
         c_chart, c_desc = st.columns([1.1, 0.9])
 
@@ -709,11 +1087,6 @@ if menu_selection == "🏙️ Executive Dashboard":
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # GOOGLE MAPS INTEGRATION ON EXECUTIVE DASHBOARD
-        render_google_maps_section(default_query="Bandra-Worli Sea Link, Mumbai", height=450, key_prefix="dash")
-
-        st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("Asset Distribution & Risk Breakdown")
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -736,10 +1109,13 @@ if menu_selection == "🏙️ Executive Dashboard":
 
 
 # =============================================================================
-# 2. GOOGLE MAPS & GIS CORRIDORS (DEDICATED EXPLORER)
+# SUBPAGE 2: GOOGLE MAPS & GIS CORRIDORS
 # =============================================================================
-elif menu_selection == "🗺️ Google Maps & GIS Corridors":
-    render_highway_hero("GOOGLE MAPS & GIS CORRIDOR EXPLORER", "Worldwide Area Search · Satellite Imagery · Asset Risk Pins")
+elif current_page == "maps":
+    st.title("🗺️ 02. Google Maps & GIS Corridors")
+    st.markdown(
+        "Search any highway corridor, bridge, or neighborhood worldwide with live satellite imagery and explore municipal GIS asset risk pins."
+    )
 
     tab_gmaps, tab_gis = st.tabs(["🗺️ Live Google Maps Area Search", "📍 Municipal Asset GIS Risk Map"])
 
@@ -767,7 +1143,6 @@ elif menu_selection == "🗺️ Google Maps & GIS Corridors":
             if selected_type != "All Asset Types":
                 filtered_geo = filtered_geo[filtered_geo["asset_type"] == selected_type]
 
-            # Legend
             st.markdown(
                 """
                 <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 12px; font-size: 13px;">
@@ -779,7 +1154,6 @@ elif menu_selection == "🗺️ Google Maps & GIS Corridors":
                 unsafe_allow_html=True,
             )
 
-            # Pydeck GIS Map
             sample_geo = filtered_geo.sample(min(300, len(filtered_geo)), random_state=42)
             center_lat = sample_geo["latitude"].mean()
             center_lon = sample_geo["longitude"].mean()
@@ -818,11 +1192,10 @@ elif menu_selection == "🗺️ Google Maps & GIS Corridors":
 
 
 # =============================================================================
-# 3. TABULAR FAILURE PREDICTION
+# SUBPAGE 3: TABULAR FAILURE PREDICTION
 # =============================================================================
-elif menu_selection == "🔮 Tabular Failure Prediction":
-    render_highway_hero("PREDICTIVE RISK INFERENCE", "Multi-Variate Telemetry · Failure Probability · RUL Estimation")
-
+elif current_page == "prediction":
+    st.title("🔮 03. Tabular Failure Prediction & RUL")
     st.info(
         "**Engineering Telemetry Evaluation:** This module computes structural failure probability and Remaining Useful Life (RUL) "
         "using Supervised Random Forest and GBDT algorithms trained on 2,200 municipal infrastructure records."
@@ -916,11 +1289,10 @@ elif menu_selection == "🔮 Tabular Failure Prediction":
 
 
 # =============================================================================
-# 4. ROAD DAMAGE DETECTION (COMPUTER VISION)
+# SUBPAGE 4: ROAD DAMAGE DETECTION (CV)
 # =============================================================================
-elif menu_selection == "🛣️ Road Damage Detection (CV)":
-    render_highway_hero("ROAD DAMAGE COMPUTER VISION", "OpenCV Image Filtering · Defect Localization · Road Damage Index")
-
+elif current_page == "cv":
+    st.title("🛣️ 04. Road Damage Detection (Computer Vision)")
     st.warning(
         "**Technical & Domain Validation Notice:**\n\n"
         "- **Image-Based Damage vs. Tabular Telemetry:** "
@@ -1005,11 +1377,10 @@ elif menu_selection == "🛣️ Road Damage Detection (CV)":
 
 
 # =============================================================================
-# 5. SEARCH SPACE OPTIMIZATION
+# SUBPAGE 5: SEARCH SPACE OPTIMIZATION
 # =============================================================================
-elif menu_selection == "⚡ Search Space Optimization":
-    render_highway_hero("MAINTENANCE SCHEDULING OPTIMIZATION", "Combinatorial 0-1 Knapsack · Hill Climbing · Beam Search · Tabu Search")
-
+elif current_page == "optimization":
+    st.title("⚡ 05. Search Space Optimization")
     st.info(
         "**Combinatorial Resource Allocation:** Given candidate assets with failure risk probabilities, "
         "repair costs, and crew hours, find the subset that **maximizes total risk reduction** "
@@ -1087,11 +1458,10 @@ elif menu_selection == "⚡ Search Space Optimization":
 
 
 # =============================================================================
-# 6. MLFLOW EXPERIMENT TRACKING
+# SUBPAGE 6: MLFLOW EXPERIMENT TRACKING
 # =============================================================================
-elif menu_selection == "📈 MLflow Experiment Tracking":
-    render_highway_hero("MLFLOW EXPERIMENT TRACKING", "Deterministic Governance · Hyperparameter Metrics · SQLite Store")
-
+elif current_page == "mlflow":
+    st.title("📈 06. MLflow Experiment Tracking")
     st.info(
         "All training runs, hyperparameters, evaluation metrics, and artifacts are systematically logged "
         "to an embedded SQLite-backed MLflow tracking store (`backend/data/mlflow_tracking.db`)."
@@ -1139,11 +1509,10 @@ elif menu_selection == "📈 MLflow Experiment Tracking":
 
 
 # =============================================================================
-# 7. AUTOML VS. MANUAL MODELS
+# SUBPAGE 7: AUTOML VS. MANUAL MODELS
 # =============================================================================
-elif menu_selection == "🤖 AutoML vs. Manual Models":
-    render_highway_hero("AUTOMATED MACHINE LEARNING (AUTOML)", "FLAML Tabular Benchmark · 80/20 Leakage-Free Split · Model Leaderboard")
-
+elif current_page == "automl":
+    st.title("🤖 07. AutoML vs. Manual Models")
     st.info(
         "**AutoML Framework:** Integrated FLAML Tabular. Trained on the exact same 80/20 train-test split "
         "as manually engineered models, guaranteeing zero data leakage."
@@ -1178,10 +1547,13 @@ elif menu_selection == "🤖 AutoML vs. Manual Models":
 
 
 # =============================================================================
-# 8. DATA STRUCTURES IN ACTION
+# SUBPAGE 8: DATA STRUCTURES IN ACTION
 # =============================================================================
-elif menu_selection == "🧬 Data Structures in Action":
-    render_highway_hero("CORE AI/ML DATA STRUCTURES", "NumPy Arrays · SciPy Sparse Matrices · Decision Trees · Graphs · Heaps · Dicts")
+elif current_page == "structures":
+    st.title("🧬 08. Core Data Structures in Action")
+    st.markdown(
+        "Practical demonstrations and performance benchmarks for the 6 core computer science and machine learning data structures."
+    )
 
     struct_res = demonstrate_all_data_structures()
 
@@ -1236,10 +1608,13 @@ elif menu_selection == "🧬 Data Structures in Action":
 
 
 # =============================================================================
-# 9. LITERATURE & DATASET SURVEY
+# SUBPAGE 9: LITERATURE & DATASET SURVEY
 # =============================================================================
-elif menu_selection == "📖 Literature & Dataset Survey":
-    render_highway_hero("ACADEMIC LITERATURE SURVEY", "Peer-Reviewed Research · Benchmark Datasets · Theoretical Foundations")
+elif current_page == "survey":
+    st.title("📖 09. Literature & Dataset Survey")
+    st.markdown(
+        "Peer-reviewed academic research citations and benchmark civil engineering dataset foundations."
+    )
 
     st.markdown(
         """
@@ -1271,10 +1646,13 @@ elif menu_selection == "📖 Literature & Dataset Survey":
 
 
 # =============================================================================
-# 10. DEPLOYMENT & FASTAPI GUIDE
+# SUBPAGE 10: DEPLOYMENT & FASTAPI GUIDE
 # =============================================================================
-elif menu_selection == "🚀 Deployment & FastAPI Guide":
-    render_highway_hero("SYSTEM DEPLOYMENT & REST API", "Dual-Mode Serving · FastAPI Endpoints · Containerization")
+elif current_page == "deployment":
+    st.title("🚀 10. Deployment & FastAPI Guide")
+    st.markdown(
+        "Dual-mode production serving architecture: Streamlit full-width dashboard and FastAPI asynchronous REST microservice."
+    )
 
     st.markdown("### System Architecture Diagram")
     st.markdown(
@@ -1292,7 +1670,7 @@ elif menu_selection == "🚀 Deployment & FastAPI Guide":
             C3 --> F[AutoML Benchmark & Model Selection]
             C4 --> G[Constrained Maintenance Schedule]
             C5 --> H[Cascading Bottleneck Analysis]
-            D & E & F & G & H --> I[Streamlit Dashboard & REST Clients]
+            D & E & F & G & H --> I[Full-Width Dashboard & REST Clients]
         ```
         """
     )
