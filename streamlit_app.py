@@ -3,18 +3,21 @@ AI Urban Infrastructure Failure Predictor - Streamlit Application
 Highway Design Theme: Planning · Construction · Progress · Impact
 Featuring:
 - Interactive Day ☀️ / Night 🌙 Mode Switcher
+- Live Google Maps Civil Corridor & Area Search
+- Municipal GIS Asset Geolocation Risk Map
 - Highway Overpass & Bridge Graphic Banners
 - Traffic Light Signal Indicator Widgets
-- 9 Comprehensive AI/ML Modules:
-  1. Executive Dashboard (Progress & Performance)
-  2. Tabular Failure Prediction & Remaining Useful Life (RUL)
-  3. Road Damage Detection (Computer Vision with OpenCV & YOLO)
-  4. Maintenance Scheduling Optimization (Hill Climbing, Beam, Tabu)
-  5. MLflow Experiment Tracking & Comparative Evaluation
-  6. AutoML vs. Manual Models (FLAML Tabular)
-  7. Core Data Structures in Action (NumPy, SciPy, Graph, Heap, Dict)
-  8. Academic Literature & Dataset Survey
-  9. System Architecture & FastAPI Deployment Guide
+- 10 Comprehensive AI/ML Modules:
+  1. Executive Dashboard (Progress & Performance + Live Google Maps Search)
+  2. Google Maps & GIS Corridor Explorer
+  3. Tabular Failure Prediction & Remaining Useful Life (RUL)
+  4. Road Damage Detection (Computer Vision with OpenCV & YOLO)
+  5. Maintenance Scheduling Optimization (Hill Climbing, Beam, Tabu)
+  6. MLflow Experiment Tracking & Comparative Evaluation
+  7. AutoML vs. Manual Models (FLAML Tabular)
+  8. Core Data Structures in Action (NumPy, SciPy, Graph, Heap, Dict)
+  9. Academic Literature & Dataset Survey
+  10. System Architecture & FastAPI Deployment Guide
 """
 from __future__ import annotations
 
@@ -23,6 +26,7 @@ import json
 from pathlib import Path
 import sys
 import time
+from urllib.parse import quote_plus
 
 # Ensure backend directory is in Python path
 ROOT_DIR = Path(__file__).resolve().parent
@@ -35,7 +39,9 @@ import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pydeck as pdk
 import streamlit as st
+import streamlit.components.v1 as components
 
 from app.cv.road_damage_detector import RoadDamageDetector, generate_sample_road_images
 from app.model_service import build_prediction_payload, load_model_bundle
@@ -85,6 +91,52 @@ def get_infrastructure_dataset():
     return pd.DataFrame()
 
 
+@st.cache_data
+def get_geo_infrastructure_dataset():
+    """Augments dataset with realistic spatial coordinates across municipal zones for GIS mapping."""
+    df = get_infrastructure_dataset()
+    if df.empty:
+        return pd.DataFrame()
+
+    df = df.copy()
+    # Zone center coordinates (Metro Corridor simulation)
+    zone_centers = {
+        "North": (19.1800, 72.8550),      # Northern Express Corridor
+        "South": (18.9300, 72.8250),      # Coastal Causeway / Bridge Ring
+        "Central": (19.0150, 72.8450),    # Central Arterial Crossways
+        "Industrial": (19.0700, 72.8900), # Port & Industrial Freight Highway
+        "Residential": (19.1200, 72.8350),# Western Suburban Rings
+    }
+
+    lats = []
+    lons = []
+    np.random.seed(42)
+    for idx, row in df.iterrows():
+        z = row.get("zone", "Central")
+        base_lat, base_lon = zone_centers.get(z, (19.0150, 72.8450))
+        # Add realistic scatter (~2-4 km spread)
+        lat = base_lat + np.random.normal(0, 0.015)
+        lon = base_lon + np.random.normal(0, 0.015)
+        lats.append(round(lat, 5))
+        lons.append(round(lon, 5))
+
+    df["latitude"] = lats
+    df["longitude"] = lons
+
+    # Compute risk category colors for map pins
+    colors = []
+    for idx, row in df.iterrows():
+        if row["structural_score"] < 45 or row["corrosion_level"] > 65 or row["failure"] == 1:
+            colors.append([239, 68, 68, 200])  # Red - High Risk
+        elif row["structural_score"] < 70 or row["corrosion_level"] > 40:
+            colors.append([245, 158, 11, 200]) # Amber - Medium Risk
+        else:
+            colors.append([16, 185, 129, 200]) # Green - Low Risk
+    df["marker_color"] = colors
+
+    return df
+
+
 # =============================================================================
 # THEME CONFIGURATION (DAY / NIGHT MODE)
 # =============================================================================
@@ -111,19 +163,16 @@ st.session_state["theme_mode"] = "Night" if is_night else "Day"
 
 # Dynamic Highway Stylesheet Injection
 if is_night:
-    # NIGHT THEME (Matches Dark Slate + Golden Yellow from Reference Images)
     theme_css = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-        /* Main App Background */
         .stApp {
             background: linear-gradient(180deg, #0b131e 0%, #111d2e 100%) !important;
             color: #e2e8f0 !important;
             font-family: 'Inter', sans-serif !important;
         }
 
-        /* Sidebar Styling */
         [data-testid="stSidebar"] {
             background-color: #080f18 !important;
             border-right: 2px solid #1e334d !important;
@@ -132,7 +181,6 @@ if is_night:
             color: #cbd5e1 !important;
         }
 
-        /* Hero Highway Banner */
         .highway-hero {
             background: linear-gradient(135deg, #132238 0%, #192a42 60%, #111c2c 100%);
             border: 2px solid #fecb00;
@@ -153,7 +201,6 @@ if is_night:
             background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
         }
 
-        /* Typography */
         h1, h2, h3 {
             font-family: 'Oswald', sans-serif !important;
             letter-spacing: 0.5px !important;
@@ -178,7 +225,6 @@ if is_night:
             opacity: 0.9 !important;
         }
 
-        /* Traffic Signal Pill */
         .traffic-light-pill {
             display: inline-flex;
             flex-direction: column;
@@ -200,7 +246,6 @@ if is_night:
         .lamp.yellow { background-color: #facc15; box-shadow: 0 0 10px #facc15; }
         .lamp.green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
 
-        /* Metric Cards */
         [data-testid="stMetric"] {
             background-color: #142234 !important;
             border: 1px solid #23374e !important;
@@ -221,7 +266,6 @@ if is_night:
             font-size: 28px !important;
         }
 
-        /* Buttons & Controls */
         .stButton > button {
             background: linear-gradient(180deg, #fecb00 0%, #e5b700 100%) !important;
             color: #0b131e !important;
@@ -239,7 +283,6 @@ if is_night:
             box-shadow: 0 6px 16px rgba(254, 203, 0, 0.5) !important;
         }
 
-        /* Progress Card */
         .progress-box {
             background: #142234;
             border: 1px solid #23374e;
@@ -250,19 +293,16 @@ if is_night:
     </style>
     """
 else:
-    # DAY THEME (Sunlit Highway Road: Sky Blue + Crisp Whites + Amber Accents)
     theme_css = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-        /* Main App Background */
         .stApp {
             background: linear-gradient(180deg, #f0f4f9 0%, #e2e8f0 100%) !important;
             color: #1e293b !important;
             font-family: 'Inter', sans-serif !important;
         }
 
-        /* Sidebar Styling */
         [data-testid="stSidebar"] {
             background-color: #ffffff !important;
             border-right: 2px solid #cbd5e1 !important;
@@ -271,7 +311,6 @@ else:
             color: #334155 !important;
         }
 
-        /* Hero Highway Banner */
         .highway-hero {
             background: linear-gradient(135deg, #1e3a5f 0%, #2b4c74 60%, #152942 100%);
             border: 2px solid #d99b00;
@@ -292,7 +331,6 @@ else:
             background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
         }
 
-        /* Typography */
         h1, h2, h3 {
             font-family: 'Oswald', sans-serif !important;
             letter-spacing: 0.5px !important;
@@ -317,7 +355,6 @@ else:
             opacity: 0.95 !important;
         }
 
-        /* Traffic Signal Pill */
         .traffic-light-pill {
             display: inline-flex;
             flex-direction: column;
@@ -339,7 +376,6 @@ else:
         .lamp.yellow { background-color: #facc15; box-shadow: 0 0 8px #facc15; }
         .lamp.green { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
 
-        /* Metric Cards */
         [data-testid="stMetric"] {
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
@@ -360,7 +396,6 @@ else:
             font-size: 28px !important;
         }
 
-        /* Buttons & Controls */
         .stButton > button {
             background: linear-gradient(180deg, #d99b00 0%, #b45309 100%) !important;
             color: #ffffff !important;
@@ -378,7 +413,6 @@ else:
             box-shadow: 0 6px 14px rgba(217, 155, 0, 0.45) !important;
         }
 
-        /* Progress Box */
         .progress-box {
             background: #ffffff;
             border: 1px solid #cbd5e1;
@@ -391,8 +425,9 @@ else:
 
 st.markdown(theme_css, unsafe_allow_html=True)
 
+
 # =============================================================================
-# REUSABLE HERO BANNER COMPONENT (Matches Reference Images 1 & 2)
+# REUSABLE COMPONENTS
 # =============================================================================
 def render_highway_hero(section_title: str = "ROAD INFRASTRUCTURE PROJECT", subtitle: str = "Planning · Construction · Progress · Impact"):
     st.markdown(
@@ -426,6 +461,106 @@ def render_highway_hero(section_title: str = "ROAD INFRASTRUCTURE PROJECT", subt
     )
 
 
+def render_google_maps_section(default_query: str = "Bandra-Worli Sea Link, Mumbai", height: int = 500, key_prefix: str = "dash"):
+    """Renders interactive Google Maps live search viewer with presets, layer views, and navigation links."""
+    st.markdown("### 🗺️ Live Google Maps Civil Corridor & Area Search")
+    st.markdown(
+        "Directly search any highway corridor, bridge, road, landmark, or city worldwide to inspect "
+        "satellite aerial imagery, road alignment, and topographical surroundings."
+    )
+
+    # Preset Corridors
+    st.markdown("**⚡ Quick Preset Corridors:**")
+    preset_cols = st.columns(6)
+    preset_locations = [
+        ("🌉 Golden Gate", "Golden Gate Bridge, San Francisco, CA"),
+        ("🌉 Brooklyn Bridge", "Brooklyn Bridge, New York, NY"),
+        ("🛣️ Marine Drive", "Marine Drive, Mumbai, India"),
+        ("🌉 Sea Link", "Bandra-Worli Sea Link, Mumbai, India"),
+        ("🌉 Millau Viaduct", "Millau Viaduct, France"),
+        ("🛣️ PCH Highway 1", "Pacific Coast Highway, California"),
+    ]
+
+    query_key = f"{key_prefix}_map_query"
+    if query_key not in st.session_state:
+        st.session_state[query_key] = default_query
+
+    for i, (label, q_val) in enumerate(preset_locations):
+        if preset_cols[i].button(label, key=f"{key_prefix}_btn_{i}", use_container_width=True):
+            st.session_state[query_key] = q_val
+
+    search_c1, search_c2, search_c3 = st.columns([2.5, 1, 1])
+    with search_c1:
+        current_query = st.text_input(
+            "Search Location, Corridor, or Address",
+            value=st.session_state[query_key],
+            key=f"{key_prefix}_input_search",
+            placeholder="e.g. Golden Gate Bridge, Marine Drive Mumbai, Highway 101, Times Square...",
+        )
+        st.session_state[query_key] = current_query
+
+    with search_c2:
+        map_type = st.selectbox(
+            "Layer Mode",
+            ["Roadmap (Streets)", "Satellite (Aerial)", "Hybrid (Satellite + Roads)", "Terrain (Topography)"],
+            index=0,
+            key=f"{key_prefix}_layer_mode",
+        )
+        map_code = {
+            "Roadmap (Streets)": "m",
+            "Satellite (Aerial)": "k",
+            "Hybrid (Satellite + Roads)": "h",
+            "Terrain (Topography)": "p",
+        }[map_type]
+
+    with search_c3:
+        zoom_level = st.slider("Zoom Level", min_value=10, max_value=19, value=15, step=1, key=f"{key_prefix}_zoom")
+
+    # Encode query for Google Maps embed
+    encoded_query = quote_plus(st.session_state[query_key])
+    maps_embed_url = f"https://maps.google.com/maps?q={encoded_query}&t={map_code}&z={zoom_level}&ie=UTF8&iwloc=&output=embed"
+
+    # Embed Google Maps
+    components.html(
+        f"""
+        <div style="border-radius: 10px; overflow: hidden; border: 2px solid #fecb00; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+            <iframe
+                width="100%"
+                height="{height}"
+                frameborder="0"
+                scrolling="no"
+                marginheight="0"
+                marginwidth="0"
+                src="{maps_embed_url}"
+                allowfullscreen
+                loading="lazy">
+            </iframe>
+        </div>
+        """,
+        height=height + 15,
+    )
+
+    btn_c1, btn_c2 = st.columns(2)
+    with btn_c1:
+        st.markdown(
+            f"""
+            <a href="https://www.google.com/maps/search/?api=1&query={encoded_query}" target="_blank" style="display: block; text-align: center; background: rgba(254, 203, 0, 0.15); border: 1px solid #fecb00; padding: 10px; border-radius: 6px; color: #fecb00; text-decoration: none; font-weight: 700; font-size: 13px;">
+                ↗ Open "{st.session_state[query_key]}" in Full Google Maps (Live Traffic & Turn-by-Turn)
+            </a>
+            """,
+            unsafe_allow_html=True,
+        )
+    with btn_c2:
+        st.markdown(
+            f"""
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=0,0&heading=0&pitch=0&fov=80" target="_blank" style="display: block; text-align: center; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; padding: 10px; border-radius: 6px; color: #10b981; text-decoration: none; font-weight: 700; font-size: 13px;">
+                👀 Launch Google Street View Highway Inspection
+            </a>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
 # Sidebar Navigation
 st.sidebar.markdown(
     """
@@ -445,6 +580,7 @@ menu_selection = st.sidebar.radio(
     "Navigation Menu",
     [
         "🏙️ Executive Dashboard",
+        "🗺️ Google Maps & GIS Corridors",
         "🔮 Tabular Failure Prediction",
         "🛣️ Road Damage Detection (CV)",
         "⚡ Search Space Optimization",
@@ -470,7 +606,7 @@ st.sidebar.markdown(
 
 
 # =============================================================================
-# 1. EXECUTIVE DASHBOARD (Matches Image 2 & Image 3)
+# 1. EXECUTIVE DASHBOARD (Matches Image 2, Image 3 + Google Maps Search)
 # =============================================================================
 if menu_selection == "🏙️ Executive Dashboard":
     render_highway_hero("ROAD INFRASTRUCTURE PROJECT", "Planning · Construction · Progress · Impact")
@@ -488,8 +624,8 @@ if menu_selection == "🏙️ Executive Dashboard":
                         The <strong>AI Urban Infrastructure Failure Predictor</strong> transitions civil asset management from
                         costly reactive emergency repairs to mathematically validated predictive maintenance. By synthesizing
                         multi-source sensor telemetry, historical maintenance intervals, physical degradation indicators,
-                        and computer vision road distress detections, the platform continuously forecasts structural vulnerability
-                        across municipal bridges, highway corridors, drainage networks, and pipelines.
+                        geospatial Google Maps corridors, and computer vision road distress detections, the platform continuously forecasts
+                        structural vulnerability across municipal bridges, highway corridors, drainage networks, and pipelines.
                     </p>
                 </div>
                 <div style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
@@ -525,7 +661,6 @@ if menu_selection == "🏙️ Executive Dashboard":
         c_chart, c_desc = st.columns([1.1, 0.9])
 
         with c_chart:
-            # Custom Progress Bar Representation
             progress_stages = [
                 ("Planning", 78, "#fecb00"),
                 ("Groundwork", 60, "#fecb00"),
@@ -574,6 +709,11 @@ if menu_selection == "🏙️ Executive Dashboard":
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
+
+        # GOOGLE MAPS INTEGRATION ON EXECUTIVE DASHBOARD
+        render_google_maps_section(default_query="Bandra-Worli Sea Link, Mumbai", height=450, key_prefix="dash")
+
+        st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("Asset Distribution & Risk Breakdown")
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -596,7 +736,89 @@ if menu_selection == "🏙️ Executive Dashboard":
 
 
 # =============================================================================
-# 2. TABULAR FAILURE PREDICTION
+# 2. GOOGLE MAPS & GIS CORRIDORS (DEDICATED EXPLORER)
+# =============================================================================
+elif menu_selection == "🗺️ Google Maps & GIS Corridors":
+    render_highway_hero("GOOGLE MAPS & GIS CORRIDOR EXPLORER", "Worldwide Area Search · Satellite Imagery · Asset Risk Pins")
+
+    tab_gmaps, tab_gis = st.tabs(["🗺️ Live Google Maps Area Search", "📍 Municipal Asset GIS Risk Map"])
+
+    with tab_gmaps:
+        render_google_maps_section(default_query="Golden Gate Bridge, San Francisco", height=550, key_prefix="full_explorer")
+
+    with tab_gis:
+        st.markdown("### 📍 Municipal Infrastructure GIS Asset Map")
+        st.markdown(
+            "Visualizing the geospatial distribution of 2,200 municipal infrastructure assets across operational zones. "
+            "Asset pins are dynamically color-coded by predicted failure vulnerability."
+        )
+
+        geo_df = get_geo_infrastructure_dataset()
+        if not geo_df.empty:
+            f_col1, f_col2 = st.columns(2)
+            with f_col1:
+                selected_zone = st.selectbox("Filter by Municipal Zone", ["All Zones"] + list(geo_df["zone"].unique()))
+            with f_col2:
+                selected_type = st.selectbox("Filter by Asset Type", ["All Asset Types"] + list(geo_df["asset_type"].unique()))
+
+            filtered_geo = geo_df.copy()
+            if selected_zone != "All Zones":
+                filtered_geo = filtered_geo[filtered_geo["zone"] == selected_zone]
+            if selected_type != "All Asset Types":
+                filtered_geo = filtered_geo[filtered_geo["asset_type"] == selected_type]
+
+            # Legend
+            st.markdown(
+                """
+                <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 12px; font-size: 13px;">
+                    <span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></span> <strong>Critical Risk (Triage)</strong></span>
+                    <span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></span> <strong>Medium Risk (Scheduled)</strong></span>
+                    <span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></span> <strong>Low Risk (Healthy)</strong></span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # Pydeck GIS Map
+            sample_geo = filtered_geo.sample(min(300, len(filtered_geo)), random_state=42)
+            center_lat = sample_geo["latitude"].mean()
+            center_lon = sample_geo["longitude"].mean()
+
+            layer = pdk.Layer(
+                "ScatterplotLayer",
+                data=sample_geo,
+                get_position=["longitude", "latitude"],
+                get_color="marker_color",
+                get_radius=80,
+                pickable=True,
+                radius_min_pixels=4,
+                radius_max_pixels=14,
+            )
+
+            view_state = pdk.ViewState(
+                latitude=center_lat,
+                longitude=center_lon,
+                zoom=11.5,
+                pitch=30,
+            )
+
+            deck = pdk.Deck(
+                layers=[layer],
+                initial_view_state=view_state,
+                tooltip={"html": "<b>Asset ID:</b> {asset_id}<br/><b>Type:</b> {asset_type}<br/><b>Zone:</b> {zone}<br/><b>Structural Score:</b> {structural_score}<br/><b>Corrosion:</b> {corrosion_level}%<br/><b>RUL:</b> {remaining_useful_life} yrs"},
+                map_style="mapbox://styles/mapbox/dark-v10" if is_night else "mapbox://styles/mapbox/light-v10",
+            )
+            st.pydeck_chart(deck, use_container_width=True)
+
+            st.markdown(f"**Showing {len(sample_geo)} geo-located assets across {selected_zone}:**")
+            st.dataframe(
+                sample_geo[["asset_id", "asset_type", "zone", "structural_score", "corrosion_level", "remaining_useful_life", "latitude", "longitude"]].head(10),
+                use_container_width=True,
+            )
+
+
+# =============================================================================
+# 3. TABULAR FAILURE PREDICTION
 # =============================================================================
 elif menu_selection == "🔮 Tabular Failure Prediction":
     render_highway_hero("PREDICTIVE RISK INFERENCE", "Multi-Variate Telemetry · Failure Probability · RUL Estimation")
@@ -661,7 +883,6 @@ elif menu_selection == "🔮 Tabular Failure Prediction":
                 rul = res["remaining_useful_life"]
                 priority = res["priority"]
 
-                # Render Highway Risk Status Card
                 border_color = "#ef4444" if risk_lvl == "HIGH" else "#f59e0b" if risk_lvl == "MEDIUM" else "#10b981"
                 st.markdown(
                     f"""
@@ -695,7 +916,7 @@ elif menu_selection == "🔮 Tabular Failure Prediction":
 
 
 # =============================================================================
-# 3. ROAD DAMAGE DETECTION (COMPUTER VISION)
+# 4. ROAD DAMAGE DETECTION (COMPUTER VISION)
 # =============================================================================
 elif menu_selection == "🛣️ Road Damage Detection (CV)":
     render_highway_hero("ROAD DAMAGE COMPUTER VISION", "OpenCV Image Filtering · Defect Localization · Road Damage Index")
@@ -784,7 +1005,7 @@ elif menu_selection == "🛣️ Road Damage Detection (CV)":
 
 
 # =============================================================================
-# 4. SEARCH SPACE OPTIMIZATION
+# 5. SEARCH SPACE OPTIMIZATION
 # =============================================================================
 elif menu_selection == "⚡ Search Space Optimization":
     render_highway_hero("MAINTENANCE SCHEDULING OPTIMIZATION", "Combinatorial 0-1 Knapsack · Hill Climbing · Beam Search · Tabu Search")
@@ -866,7 +1087,7 @@ elif menu_selection == "⚡ Search Space Optimization":
 
 
 # =============================================================================
-# 5. MLFLOW EXPERIMENT TRACKING
+# 6. MLFLOW EXPERIMENT TRACKING
 # =============================================================================
 elif menu_selection == "📈 MLflow Experiment Tracking":
     render_highway_hero("MLFLOW EXPERIMENT TRACKING", "Deterministic Governance · Hyperparameter Metrics · SQLite Store")
@@ -918,7 +1139,7 @@ elif menu_selection == "📈 MLflow Experiment Tracking":
 
 
 # =============================================================================
-# 6. AUTOML VS. MANUAL MODELS
+# 7. AUTOML VS. MANUAL MODELS
 # =============================================================================
 elif menu_selection == "🤖 AutoML vs. Manual Models":
     render_highway_hero("AUTOMATED MACHINE LEARNING (AUTOML)", "FLAML Tabular Benchmark · 80/20 Leakage-Free Split · Model Leaderboard")
@@ -957,7 +1178,7 @@ elif menu_selection == "🤖 AutoML vs. Manual Models":
 
 
 # =============================================================================
-# 7. DATA STRUCTURES IN ACTION
+# 8. DATA STRUCTURES IN ACTION
 # =============================================================================
 elif menu_selection == "🧬 Data Structures in Action":
     render_highway_hero("CORE AI/ML DATA STRUCTURES", "NumPy Arrays · SciPy Sparse Matrices · Decision Trees · Graphs · Heaps · Dicts")
@@ -1015,7 +1236,7 @@ elif menu_selection == "🧬 Data Structures in Action":
 
 
 # =============================================================================
-# 8. LITERATURE & DATASET SURVEY
+# 9. LITERATURE & DATASET SURVEY
 # =============================================================================
 elif menu_selection == "📖 Literature & Dataset Survey":
     render_highway_hero("ACADEMIC LITERATURE SURVEY", "Peer-Reviewed Research · Benchmark Datasets · Theoretical Foundations")
@@ -1050,7 +1271,7 @@ elif menu_selection == "📖 Literature & Dataset Survey":
 
 
 # =============================================================================
-# 9. DEPLOYMENT & FASTAPI GUIDE
+# 10. DEPLOYMENT & FASTAPI GUIDE
 # =============================================================================
 elif menu_selection == "🚀 Deployment & FastAPI Guide":
     render_highway_hero("SYSTEM DEPLOYMENT & REST API", "Dual-Mode Serving · FastAPI Endpoints · Containerization")

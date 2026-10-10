@@ -20,6 +20,7 @@ The **Road Infrastructure Project** is an academic, multi-modal AI decision-supp
 - **Estimates Remaining Useful Life (RUL):** Predicts remaining operational service life in years.
 - **Detects Surface Distress via Computer Vision:** Identifies potholes, cracks, and ravelling from road photos using OpenCV and YOLO.
 - **Optimizes Maintenance Schedules:** Allocates municipal repair budgets using combinatorial search heuristics (Hill Climbing, Beam Search, Tabu Search).
+- **Google Maps Live Corridor Search:** Directly search any highway, bridge, city, or address worldwide with satellite aerial view, terrain topography, and municipal GIS asset risk pins.
 - **Supports Day & Night Themes:** Features an interactive highway-themed interface with Day ☀️ and Night 🌙 display modes.
 
 ---
