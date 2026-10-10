@@ -22,6 +22,19 @@ export default function Header({ title, description, onMenuClick }) {
     };
   }, []);
 
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
     <header className="topbar">
       <button className="menu-button" type="button" onClick={onMenuClick} aria-label="Toggle navigation">
@@ -40,6 +53,15 @@ export default function Header({ title, description, onMenuClick }) {
       </div>
 
       <div className="topbar-status">
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to Sunlit Road (Day Mode)' : 'Switch to Dark Highway (Night Mode)'}
+        >
+          {theme === 'dark' ? '☀️ Day' : '🌙 Night'}
+        </button>
+
         <div className="header-traffic-signal" title={connected ? 'System Status: Active & Connected' : 'System Status: Backend Offline'}>
           <span className={`signal-dot red ${!connected ? 'lit' : ''}`} />
           <span className="signal-dot yellow" />

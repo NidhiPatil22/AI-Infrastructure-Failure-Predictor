@@ -1,15 +1,20 @@
 """
 AI Urban Infrastructure Failure Predictor - Streamlit Application
-Primary multi-page interactive web application integrating:
-1. Executive Infrastructure Overview & Analytics
-2. Tabular Failure Prediction & Remaining Useful Life (RUL)
-3. Road Damage Detection (Computer Vision with OpenCV & YOLO)
-4. Maintenance Scheduling Optimization (Hill Climbing, Beam Search, Tabu Search)
-5. MLflow Experiment Tracking & Comparative Analysis
-6. AutoML Benchmarks (FLAML Tabular vs. Manual Models)
-7. Core Data Structures in Action (NumPy, Sparse Matrices, Decision Trees, Graphs, Heaps, Dictionaries)
-8. Literature & Dataset Survey
-9. System Architecture & Model Deployment Guide
+Highway Design Theme: Planning · Construction · Progress · Impact
+Featuring:
+- Interactive Day ☀️ / Night 🌙 Mode Switcher
+- Highway Overpass & Bridge Graphic Banners
+- Traffic Light Signal Indicator Widgets
+- 9 Comprehensive AI/ML Modules:
+  1. Executive Dashboard (Progress & Performance)
+  2. Tabular Failure Prediction & Remaining Useful Life (RUL)
+  3. Road Damage Detection (Computer Vision with OpenCV & YOLO)
+  4. Maintenance Scheduling Optimization (Hill Climbing, Beam, Tabu)
+  5. MLflow Experiment Tracking & Comparative Evaluation
+  6. AutoML vs. Manual Models (FLAML Tabular)
+  7. Core Data Structures in Action (NumPy, SciPy, Graph, Heap, Dict)
+  8. Academic Literature & Dataset Survey
+  9. System Architecture & FastAPI Deployment Guide
 """
 from __future__ import annotations
 
@@ -19,7 +24,7 @@ from pathlib import Path
 import sys
 import time
 
-# Ensure backend root is on Python path
+# Ensure backend directory is in Python path
 ROOT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT_DIR / "backend"
 if str(BACKEND_DIR) not in sys.path:
@@ -41,10 +46,10 @@ from app.optimization.maintenance_scheduler import (
 )
 from app.structures.data_structures_demo import demonstrate_all_data_structures
 
-# Streamlit Page Configuration
+# Streamlit Page Setup
 st.set_page_config(
-    page_title="AI Urban Infrastructure Failure Predictor",
-    page_icon="🏙️",
+    page_title="Road Infrastructure Project | Civil AI Decision Support",
+    page_icon="🚦",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -80,14 +85,364 @@ def get_infrastructure_dataset():
     return pd.DataFrame()
 
 
-# Sidebar Navigation
-st.sidebar.image(
-    "https://img.shields.io/badge/AIML--Laboratory-Infrastructure--Predictor-007ACC?style=for-the-badge&logo=python&logoColor=white",
-    use_container_width=True,
+# =============================================================================
+# THEME CONFIGURATION (DAY / NIGHT MODE)
+# =============================================================================
+if "theme_mode" not in st.session_state:
+    st.session_state["theme_mode"] = "Night"
+
+st.sidebar.markdown(
+    """
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <span style="font-weight: 700; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">Highway Theme</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
-st.sidebar.title("Navigation")
+
+theme_selection = st.sidebar.radio(
+    "Select Display Theme",
+    ["🌙 Night Mode (Dark Highway)", "☀️ Day Mode (Sunlit Road)"],
+    index=0 if st.session_state["theme_mode"] == "Night" else 1,
+    label_visibility="collapsed",
+)
+is_night = "Night" in theme_selection
+st.session_state["theme_mode"] = "Night" if is_night else "Day"
+
+# Dynamic Highway Stylesheet Injection
+if is_night:
+    # NIGHT THEME (Matches Dark Slate + Golden Yellow from Reference Images)
+    theme_css = """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        /* Main App Background */
+        .stApp {
+            background: linear-gradient(180deg, #0b131e 0%, #111d2e 100%) !important;
+            color: #e2e8f0 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {
+            background-color: #080f18 !important;
+            border-right: 2px solid #1e334d !important;
+        }
+        [data-testid="stSidebar"] * {
+            color: #cbd5e1 !important;
+        }
+
+        /* Hero Highway Banner */
+        .highway-hero {
+            background: linear-gradient(135deg, #132238 0%, #192a42 60%, #111c2c 100%);
+            border: 2px solid #fecb00;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(254, 203, 0, 0.08);
+        }
+        .highway-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px !important;
+            color: #fecb00 !important;
+            text-transform: uppercase !important;
+        }
+        .hero-title {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 38px !important;
+            font-weight: 700 !important;
+            color: #fecb00 !important;
+            letter-spacing: 2px !important;
+            margin: 0 !important;
+            line-height: 1.1 !important;
+        }
+        .hero-subtitle {
+            color: #ffffff !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            letter-spacing: 1px !important;
+            margin-top: 6px !important;
+            opacity: 0.9 !important;
+        }
+
+        /* Traffic Signal Pill */
+        .traffic-light-pill {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #0a0e14;
+            padding: 10px 8px;
+            border-radius: 20px;
+            border: 2px solid #2a3b50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            align-items: center;
+        }
+        .lamp {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: block;
+        }
+        .lamp.red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 10px #facc15; }
+        .lamp.green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
+
+        /* Metric Cards */
+        [data-testid="stMetric"] {
+            background-color: #142234 !important;
+            border: 1px solid #23374e !important;
+            border-left: 5px solid #fecb00 !important;
+            border-radius: 8px !important;
+            padding: 14px 18px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+        }
+        [data-testid="stMetricLabel"] {
+            color: #94a3b8 !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+        }
+        [data-testid="stMetricValue"] {
+            color: #ffffff !important;
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 28px !important;
+        }
+
+        /* Buttons & Controls */
+        .stButton > button {
+            background: linear-gradient(180deg, #fecb00 0%, #e5b700 100%) !important;
+            color: #0b131e !important;
+            font-weight: 700 !important;
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 1px !important;
+            border: none !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 12px rgba(254, 203, 0, 0.3) !important;
+            text-transform: uppercase !important;
+        }
+        .stButton > button:hover {
+            background: #ffd833 !important;
+            color: #000000 !important;
+            box-shadow: 0 6px 16px rgba(254, 203, 0, 0.5) !important;
+        }
+
+        /* Progress Card */
+        .progress-box {
+            background: #142234;
+            border: 1px solid #23374e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+    </style>
+    """
+else:
+    # DAY THEME (Sunlit Highway Road: Sky Blue + Crisp Whites + Amber Accents)
+    theme_css = """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        /* Main App Background */
+        .stApp {
+            background: linear-gradient(180deg, #f0f4f9 0%, #e2e8f0 100%) !important;
+            color: #1e293b !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {
+            background-color: #ffffff !important;
+            border-right: 2px solid #cbd5e1 !important;
+        }
+        [data-testid="stSidebar"] * {
+            color: #334155 !important;
+        }
+
+        /* Hero Highway Banner */
+        .highway-hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2b4c74 60%, #152942 100%);
+            border: 2px solid #d99b00;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px -3px rgba(30, 58, 95, 0.25);
+        }
+        .highway-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: repeating-linear-gradient(90deg, #fecb00 0, #fecb00 30px, transparent 30px, transparent 50px);
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px !important;
+            color: #b45309 !important;
+            text-transform: uppercase !important;
+        }
+        .hero-title {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 38px !important;
+            font-weight: 700 !important;
+            color: #fecb00 !important;
+            letter-spacing: 2px !important;
+            margin: 0 !important;
+            line-height: 1.1 !important;
+        }
+        .hero-subtitle {
+            color: #ffffff !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            letter-spacing: 1px !important;
+            margin-top: 6px !important;
+            opacity: 0.95 !important;
+        }
+
+        /* Traffic Signal Pill */
+        .traffic-light-pill {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #111827;
+            padding: 10px 8px;
+            border-radius: 20px;
+            border: 2px solid #374151;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            align-items: center;
+        }
+        .lamp {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: block;
+        }
+        .lamp.red { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .lamp.yellow { background-color: #facc15; box-shadow: 0 0 8px #facc15; }
+        .lamp.green { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+
+        /* Metric Cards */
+        [data-testid="stMetric"] {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-left: 5px solid #d99b00 !important;
+            border-radius: 8px !important;
+            padding: 14px 18px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06) !important;
+        }
+        [data-testid="stMetricLabel"] {
+            color: #64748b !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+        }
+        [data-testid="stMetricValue"] {
+            color: #0f172a !important;
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 28px !important;
+        }
+
+        /* Buttons & Controls */
+        .stButton > button {
+            background: linear-gradient(180deg, #d99b00 0%, #b45309 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 1px !important;
+            border: none !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 10px rgba(217, 155, 0, 0.3) !important;
+            text-transform: uppercase !important;
+        }
+        .stButton > button:hover {
+            background: #f59e0b !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 14px rgba(217, 155, 0, 0.45) !important;
+        }
+
+        /* Progress Box */
+        .progress-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+    </style>
+    """
+
+st.markdown(theme_css, unsafe_allow_html=True)
+
+# =============================================================================
+# REUSABLE HERO BANNER COMPONENT (Matches Reference Images 1 & 2)
+# =============================================================================
+def render_highway_hero(section_title: str = "ROAD INFRASTRUCTURE PROJECT", subtitle: str = "Planning · Construction · Progress · Impact"):
+    st.markdown(
+        f"""
+        <div class="highway-hero">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div class="traffic-light-pill">
+                        <span class="lamp red"></span>
+                        <span class="lamp yellow"></span>
+                        <span class="lamp green"></span>
+                    </div>
+                    <div>
+                        <div style="display: inline-block; background-color: rgba(254, 203, 0, 0.15); border: 1px solid #fecb00; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #fecb00; letter-spacing: 1.5px; margin-bottom: 6px;">
+                            CIVIL ASSET PREDICTIVE AI SYSTEM
+                        </div>
+                        <h1 class="hero-title">{section_title}</h1>
+                        <div class="hero-subtitle">{subtitle}</div>
+                    </div>
+                </div>
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(254, 203, 0, 0.4); border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #fecb00; font-weight: 600;">
+                        STATUS: MONITORING ACTIVE
+                    </div>
+                    <span style="font-size: 11px; opacity: 0.7; color: #ffffff;">2,200 Monitored Highway & Urban Assets</span>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# Sidebar Navigation
+st.sidebar.markdown(
+    """
+    <div style="text-align: center; padding: 10px 0 16px 0;">
+        <div style="font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 700; color: #fecb00; letter-spacing: 1px;">
+            ROAD INFRASTRUCTURE
+        </div>
+        <div style="font-size: 11px; letter-spacing: 0.5px; opacity: 0.8;">
+            AI Predictive Maintenance Suite
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 menu_selection = st.sidebar.radio(
-    "Select Module",
+    "Navigation Menu",
     [
         "🏙️ Executive Dashboard",
         "🔮 Tabular Failure Prediction",
@@ -102,16 +457,52 @@ menu_selection = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Smart Urban Infrastructure Monitoring System | AIML Laboratory")
+st.sidebar.markdown(
+    """
+    <div style="font-size: 12px; line-height: 1.6; opacity: 0.75;">
+        <strong>Asset Modalities:</strong><br>
+        🌉 Bridges · 🛣️ Roads · 💧 Pipelines<br>
+        🌊 Drainage · 💡 Streetlights · ⚡ Power
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # =============================================================================
-# 1. EXECUTIVE DASHBOARD
+# 1. EXECUTIVE DASHBOARD (Matches Image 2 & Image 3)
 # =============================================================================
 if menu_selection == "🏙️ Executive Dashboard":
-    st.title("🏙️ Urban Infrastructure Resilience & Failure Dashboard")
+    render_highway_hero("ROAD INFRASTRUCTURE PROJECT", "Planning · Construction · Progress · Impact")
+
+    # Project Overview Card (Styled from Reference Image 2)
     st.markdown(
-        "A holistic AI decision-support platform combining tabular risk estimation, "
-        "computer vision surface inspection, and combinatorial maintenance scheduling."
+        """
+        <div class="progress-box" style="margin-bottom: 24px;">
+            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 300px;">
+                    <div style="color: #fecb00; font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+                        Project Overview
+                    </div>
+                    <p style="font-size: 14.5px; line-height: 1.6; margin: 0; opacity: 0.9;">
+                        The <strong>AI Urban Infrastructure Failure Predictor</strong> transitions civil asset management from
+                        costly reactive emergency repairs to mathematically validated predictive maintenance. By synthesizing
+                        multi-source sensor telemetry, historical maintenance intervals, physical degradation indicators,
+                        and computer vision road distress detections, the platform continuously forecasts structural vulnerability
+                        across municipal bridges, highway corridors, drainage networks, and pipelines.
+                    </p>
+                </div>
+                <div style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
+                    <div style="background: rgba(254, 203, 0, 0.08); border: 2px dashed #fecb00; border-radius: 8px; padding: 14px 20px; text-align: center;">
+                        <span style="font-size: 26px;">🌉</span>
+                        <div style="font-weight: 700; color: #fecb00; font-family: 'Oswald', sans-serif; font-size: 18px; margin-top: 4px;">6 ASSET CLASSES</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Bridges, Roads, Pipes, Drainage, Poles, Lights</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     df = get_infrastructure_dataset()
@@ -125,16 +516,72 @@ if menu_selection == "🏙️ Executive Dashboard":
         col1.metric("Total Monitored Assets", f"{total_assets:,}", "Citywide Network")
         col2.metric("Failure Incident Rate", f"{failure_rate:.1f}%", f"{df['failure'].sum()} flagged")
         col3.metric("Avg. Remaining Useful Life", f"{avg_rul:.1f} yrs", "Temporal Health")
-        col4.metric("High-Risk Assets (Triage)", f"{high_risk_count:,}", "Immediate Priority", delta_color="inverse")
+        col4.metric("High-Risk Assets (Triage)", f"{high_risk_count:,}", "Immediate Priority")
 
-        st.markdown("### Asset Distribution & Risk Breakdown")
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Progress & Performance Section (Styled directly from Reference Image 3)
+        st.subheader("Progress & Performance")
+        c_chart, c_desc = st.columns([1.1, 0.9])
+
+        with c_chart:
+            # Custom Progress Bar Representation
+            progress_stages = [
+                ("Planning", 78, "#fecb00"),
+                ("Groundwork", 60, "#fecb00"),
+                ("Structures", 45, "#fecb00"),
+                ("Paving & Surfacing", 30, "#fecb00"),
+            ]
+            for stage, pct, color in progress_stages:
+                st.markdown(
+                    f"""
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
+                            <span>{stage}</span>
+                            <span style="color: {color}; font-weight: 700;">{pct}% Completed</span>
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.1); border-radius: 6px; height: 16px; overflow: hidden; border: 1px solid rgba(254, 203, 0, 0.2);">
+                            <div style="background: linear-gradient(90deg, #fecb00, #e5b700); width: {pct}%; height: 100%; border-radius: 5px;"></div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+        with c_desc:
+            st.markdown(
+                """
+                <div class="progress-box" style="height: 100%;">
+                    <div style="color: #fecb00; font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                        Civil Infrastructure Health Index
+                    </div>
+                    <p style="font-size: 13.5px; line-height: 1.5; opacity: 0.9; margin-bottom: 12px;">
+                        Engineering inspection cycles are dynamically prioritized based on failure risk scores.
+                        Assets in early planning and structural phases are monitored for initial fatigue, while operational
+                        paving surfaces are continuously screened using the integrated Computer Vision defect detector.
+                    </p>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="traffic-light-pill" style="flex-direction: row; padding: 6px 12px; gap: 8px;">
+                            <span class="lamp red"></span>
+                            <span class="lamp yellow"></span>
+                            <span class="lamp green"></span>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 600; opacity: 0.85;">Highway Signal System Synchronized</span>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("Asset Distribution & Risk Breakdown")
         c1, c2 = st.columns([1, 1])
         with c1:
-            st.subheader("Asset Types by Zone")
+            st.markdown("##### Asset Distribution by Municipal Zone")
             type_counts = df.groupby(["asset_type", "zone"]).size().unstack().fillna(0)
             st.bar_chart(type_counts)
         with c2:
-            st.subheader("Remaining Useful Life vs. Structural Score")
+            st.markdown("##### Remaining Useful Life vs. Structural Health Score")
             sample_chart = df.sample(min(200, len(df)), random_state=42)
             st.scatter_chart(
                 sample_chart,
@@ -144,18 +591,19 @@ if menu_selection == "🏙️ Executive Dashboard":
                 size="corrosion_level",
             )
 
-        st.markdown("### Recent Infrastructure Telemetry Sample")
+        st.markdown("##### Recent Municipal Asset Telemetry Stream")
         st.dataframe(df.head(8), use_container_width=True)
+
 
 # =============================================================================
 # 2. TABULAR FAILURE PREDICTION
 # =============================================================================
 elif menu_selection == "🔮 Tabular Failure Prediction":
-    st.title("🔮 Tabular Infrastructure Failure & RUL Prediction")
+    render_highway_hero("PREDICTIVE RISK INFERENCE", "Multi-Variate Telemetry · Failure Probability · RUL Estimation")
+
     st.info(
-        "**Module Distinction:** This module analyzes tabular operational, environmental, and structural telemetry "
-        "(age, load, traffic density, corrosion, maintenance gap) to forecast the likelihood of catastrophic failure "
-        "and calculate Remaining Useful Life (RUL) using Supervised Machine Learning."
+        "**Engineering Telemetry Evaluation:** This module computes structural failure probability and Remaining Useful Life (RUL) "
+        "using Supervised Random Forest and GBDT algorithms trained on 2,200 municipal infrastructure records."
     )
 
     c_form, c_result = st.columns([1.1, 0.9])
@@ -165,23 +613,23 @@ elif menu_selection == "🔮 Tabular Failure Prediction":
         with st.form("prediction_form"):
             col_a, col_b = st.columns(2)
             with col_a:
-                asset_id = st.text_input("Asset ID", "ASSET-TX-8492")
+                asset_id = st.text_input("Asset Identifier", "ASSET-HWY-104")
                 asset_type = st.selectbox("Asset Type", ["Bridge", "Road", "Pipeline", "Drainage", "Electrical Pole", "Streetlight"])
                 zone = st.selectbox("Municipal Zone", ["Central", "North", "South", "Industrial", "Residential"])
-                material = st.selectbox("Material Type", ["Steel", "Concrete", "Asphalt", "Composite", "Copper"])
-                age_years = st.slider("Asset Age (Years)", 0.5, 50.0, 18.5, 0.5)
-                traffic_density = st.slider("Daily Traffic Density Index", 5.0, 100.0, 65.0, 1.0)
-                average_load = st.slider("Average Mechanical Load (Tons/Day)", 10.0, 200.0, 115.0, 1.0)
+                material = st.selectbox("Material Composition", ["Steel", "Concrete", "Asphalt", "Composite", "Copper"])
+                age_years = st.slider("Asset Age (Years)", 0.5, 50.0, 22.0, 0.5)
+                traffic_density = st.slider("Daily Traffic Density Index", 5.0, 100.0, 72.0, 1.0)
+                average_load = st.slider("Average Mechanical Load (Tons)", 10.0, 200.0, 120.0, 1.0)
             with col_b:
-                annual_rainfall = st.slider("Annual Rainfall (mm)", 300.0, 3000.0, 1650.0, 50.0)
-                average_temp = st.slider("Average Temp (°C)", 5.0, 45.0, 28.0, 0.5)
-                maintenance_count = st.number_input("Past Maintenance Events", 0, 20, 3)
-                days_since_maint = st.slider("Days Since Last Maintenance", 0, 730, 240, 5)
-                days_since_insp = st.slider("Days Since Last Inspection", 0, 730, 180, 5)
-                structural_score = st.slider("Structural Health Score (0-100)", 0.0, 100.0, 48.0, 0.5)
-                corrosion_level = st.slider("Corrosion / Wear Level (0-100)", 0.0, 100.0, 58.0, 0.5)
-                previous_failures = st.number_input("Recorded Previous Failures", 0, 10, 1)
-                usage_intensity = st.slider("Usage Intensity Factor (0-100)", 0.0, 100.0, 72.0, 1.0)
+                annual_rainfall = st.slider("Annual Precipitation (mm)", 300.0, 3000.0, 1850.0, 50.0)
+                average_temp = st.slider("Average Ambient Temp (°C)", 5.0, 45.0, 31.0, 0.5)
+                maintenance_count = st.number_input("Past Maintenance Events", 0, 20, 2)
+                days_since_maint = st.slider("Days Since Last Maintenance", 0, 730, 260, 5)
+                days_since_insp = st.slider("Days Since Last Inspection", 0, 730, 140, 5)
+                structural_score = st.slider("Structural Health Score (0-100)", 0.0, 100.0, 44.0, 0.5)
+                corrosion_level = st.slider("Corrosion / Wear Level (%)", 0.0, 100.0, 62.0, 0.5)
+                previous_failures = st.number_input("Recorded Previous Failures", 0, 10, 2)
+                usage_intensity = st.slider("Operational Usage Intensity", 0.0, 100.0, 75.0, 1.0)
 
             submitted = st.form_submit_button("Run Predictive Risk Inference", use_container_width=True)
 
@@ -213,45 +661,53 @@ elif menu_selection == "🔮 Tabular Failure Prediction":
                 rul = res["remaining_useful_life"]
                 priority = res["priority"]
 
-                # Render risk status badge
-                color_map = {"HIGH": "#e53e3e", "MEDIUM": "#dd6b20", "LOW": "#38a169"}
+                # Render Highway Risk Status Card
+                border_color = "#ef4444" if risk_lvl == "HIGH" else "#f59e0b" if risk_lvl == "MEDIUM" else "#10b981"
                 st.markdown(
                     f"""
-                    <div style="background-color: {color_map.get(risk_lvl, '#4a5568')}22;
-                                border-left: 6px solid {color_map.get(risk_lvl, '#4a5568')};
-                                padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                        <h3 style="color: {color_map.get(risk_lvl, '#4a5568')}; margin: 0;">Risk Level: {risk_lvl}</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 15px;"><strong>Failure Probability:</strong> {prob_pct:.1f}% | <strong>Priority:</strong> {priority}</p>
+                    <div style="background: rgba(19, 34, 56, 0.85); border: 2px solid {border_color}; border-left: 8px solid {border_color}; border-radius: 8px; padding: 18px; margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: {border_color};">
+                                PREDICTED RISK LEVEL: {risk_lvl}
+                            </span>
+                            <span style="background: {border_color}; color: #ffffff; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-size: 12px;">
+                                PRIORITY: {priority}
+                            </span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 15px; color: #ffffff;">
+                            <strong>Failure Probability:</strong> <span style="font-size: 18px; font-weight: 700; color: {border_color};">{prob_pct:.1f}%</span>
+                        </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
-                st.metric("Estimated Remaining Useful Life (RUL)", f"{rul:.1f} Years")
-                st.markdown(f"**Recommended Maintenance Action:**\n> {res['recommendation']}")
+                st.metric("Estimated Remaining Useful Life (RUL)", f"{rul:.1f} Years", "Prognostic Life Horizon")
+                st.markdown(f"**Recommended Maintenance Action:**\n> ⚠️ *{res['recommendation']}*")
 
-                st.markdown("#### Primary Vulnerability Contributors")
+                st.markdown("##### Primary Vulnerability Factors")
                 factors = res["key_factors"]
                 st.bar_chart(pd.Series(factors))
             except Exception as e:
                 st.error(f"Inference error: {e}")
         else:
-            st.info("Fill out the asset parameters on the left and click **Run Predictive Risk Inference** to generate ML diagnostics.")
+            st.info("Configure asset parameters on the left and click **Run Predictive Risk Inference**.")
+
 
 # =============================================================================
 # 3. ROAD DAMAGE DETECTION (COMPUTER VISION)
 # =============================================================================
 elif menu_selection == "🛣️ Road Damage Detection (CV)":
-    st.title("🛣️ Road Damage Detection (OpenCV & Ultralytics YOLO)")
+    render_highway_hero("ROAD DAMAGE COMPUTER VISION", "OpenCV Image Filtering · Defect Localization · Road Damage Index")
+
     st.warning(
         "**Technical & Domain Validation Notice:**\n\n"
-        "- **Image-Based Damage Detection vs. Tabular Failure Prediction:** "
-        "This CV module analyzes 2D optical images of pavement surface distress (such as potholes, longitudinal cracks, "
-        "and ravelling). In contrast, tabular failure prediction models long-term degradation using sensor time-series, age, and loads.\n"
-        "- **Pretrained Model Scope:** Standard off-the-shelf YOLO models (e.g. YOLOv8 on COCO) are trained on general categories "
-        "(cars, pedestrians, chairs) and **do not detect road cracks or potholes** without dedicated fine-tuning on road distress benchmarks "
-        "(such as RDD2020/RDD2022). This module applies verified OpenCV morphological contour and shape-factor extraction combined with "
-        "YOLO architecture integration to localize pavement damage candidates."
+        "- **Image-Based Damage vs. Tabular Telemetry:** "
+        "This CV module analyzes 2D macroscopic photos of pavement distress (potholes, cracks, ravelling), "
+        "whereas tabular failure prediction models long-term operational wear.\n"
+        "- **Pretrained Model Scope:** Standard off-the-shelf COCO YOLO weights detect general objects (cars, pedestrians) "
+        "and **cannot detect asphalt cracks or potholes** without domain fine-tuning. This module uses verified OpenCV morphological "
+        "contour and shape-factor extraction combined with YOLO bounding-box integration."
     )
 
     detector = get_cached_cv_detector()
@@ -290,13 +746,13 @@ elif menu_selection == "🛣️ Road Damage Detection (CV)":
 
                 col_img1, col_img2 = st.columns(2)
                 with col_img1:
-                    st.subheader("Original & Filtered Preprocessing Pipeline")
+                    st.subheader("Filter Preprocessing Stages")
                     stages = res["preprocessed_stages"]
                     st.image(stages["clahe_enhanced"], caption="OpenCV CLAHE Contrast Equalization", use_container_width=True)
-                    st.image(stages["canny_edges"], caption="Canny Edge Detection & Gradient Boundary Mask", use_container_width=True)
+                    st.image(stages["canny_edges"], caption="Canny Edge Detection Boundary Mask", use_container_width=True)
 
                 with col_img2:
-                    st.subheader("Annotated Detections & Bounding Boxes")
+                    st.subheader("Annotated Detections")
                     st.image(res["annotated_image_rgb"], caption=f"Identified {res['detections_count']} Road Surface Defects", use_container_width=True)
 
                 st.markdown("### Detection Metrics & Road Damage Index (RDI)")
@@ -326,22 +782,22 @@ elif menu_selection == "🛣️ Road Damage Detection (CV)":
             except Exception as e:
                 st.error(f"Error during computer vision analysis: {e}")
 
+
 # =============================================================================
 # 4. SEARCH SPACE OPTIMIZATION
 # =============================================================================
 elif menu_selection == "⚡ Search Space Optimization":
-    st.title("⚡ Search Space Management: Maintenance Scheduling Optimization")
+    render_highway_hero("MAINTENANCE SCHEDULING OPTIMIZATION", "Combinatorial 0-1 Knapsack · Hill Climbing · Beam Search · Tabu Search")
+
     st.info(
-        "**Combinatorial Optimization Problem:** Given candidate infrastructure assets with estimated failure probabilities, "
-        "repair costs, and crew hours, select the optimal subset of assets to maintain that **maximizes total expected risk reduction** "
-        "without violating budget or crew capacity limits."
+        "**Combinatorial Resource Allocation:** Given candidate assets with failure risk probabilities, "
+        "repair costs, and crew hours, find the subset that **maximizes total risk reduction** "
+        "without exceeding municipal budget or labor constraints."
     )
 
-    st.markdown("### Objective Function & Constraint Formulation")
     st.latex(r"""
     \max_{S \subseteq \mathcal{A}} f(S) = \sum_{i \in S} \Delta R_i \cdot W_i \quad \text{subject to} \quad \sum_{i \in S} C_i \le B, \quad \sum_{i \in S} H_i \le H_{\max}
     """)
-    st.caption("Where $\\Delta R_i$ is failure probability, $W_i$ is criticality weight, $C_i$ is cost ($), and $H_i$ is crew capacity hours.")
 
     col_ctrl1, col_ctrl2 = st.columns(2)
     with col_ctrl1:
@@ -349,7 +805,6 @@ elif menu_selection == "⚡ Search Space Optimization":
     with col_ctrl2:
         capacity_input = st.number_input("Crew Team Capacity (Person-Hours)", min_value=20.0, max_value=500.0, value=140.0, step=10.0)
 
-    # Candidate Assets Portfolio
     sample_assets = [
         {"asset_id": "ASSET-B01", "asset_type": "Major River Bridge", "risk_score": 0.94, "cost": 16000, "capacity_hours": 42, "criticality": 1.6},
         {"asset_id": "ASSET-P02", "asset_type": "Trunk Water Pipeline", "risk_score": 0.88, "cost": 11000, "capacity_hours": 30, "criticality": 1.4},
@@ -377,9 +832,8 @@ elif menu_selection == "⚡ Search Space Optimization":
         comp_df = pd.DataFrame(opt_res["comparison_table"])
         st.dataframe(comp_df, use_container_width=True)
 
-        # Plot comparison
         fig, ax = plt.subplots(figsize=(8, 3.5))
-        bars = ax.bar(comp_df["Algorithm"], comp_df["Risk Reduction (Objective)"], color=["#4299e1", "#48bb78", "#ed8936"])
+        bars = ax.bar(comp_df["Algorithm"], comp_df["Risk Reduction (Objective)"], color=["#4299e1", "#fecb00", "#10b981"])
         ax.set_ylabel("Total Risk Reduction (f(S))")
         ax.set_title("Objective Function Comparison across Search Heuristics")
         for bar in bars:
@@ -390,10 +844,10 @@ elif menu_selection == "⚡ Search Space Optimization":
         st.pyplot(fig)
 
     st.markdown("---")
-    st.subheader("⚠️ Proof Demonstration: Local-Optimum Vulnerability of Hill Climbing")
+    st.subheader("⚠️ Proof: Local-Optimum Trap in Hill Climbing")
     st.markdown(
-        "Standard steepest-ascent Hill Climbing is inherently greedy: it selects the move that gives the highest immediate gain. "
-        "The proof scenario below demonstrates how Hill Climbing gets trapped in a suboptimal state, while Beam Search and Tabu Search discover the global optimum."
+        "Steepest-ascent Hill Climbing is greedy: it picks the single highest immediate gain. "
+        "The proof below shows how Hill Climbing gets trapped in a local optimum, while Beam Search and Tabu Search reach the global optimum."
     )
 
     proof = demonstrate_hill_climbing_limitation()
@@ -401,7 +855,7 @@ elif menu_selection == "⚡ Search Space Optimization":
     with p_col1:
         st.markdown("**Crafted Counterexample Assets:**")
         st.dataframe(pd.DataFrame(proof["crafted_assets"])[["asset_id", "risk_score", "cost", "capacity_hours"]])
-        st.markdown(f"**Budget Limit:** ${proof['budget_limit']:,} | **Capacity Limit:** {proof['capacity_limit']} hrs")
+        st.markdown(f"**Budget:** ${proof['budget_limit']:,} | **Capacity:** {proof['capacity_limit']} hrs")
 
     with p_col2:
         st.markdown("**Search Algorithm Outcomes:**")
@@ -410,16 +864,16 @@ elif menu_selection == "⚡ Search Space Optimization":
         st.success(f"🟢 **Tabu Search:** Objective = {proof['tabu_search_result']['objective']} | Selected: {proof['tabu_search_result']['selected']} ({proof['tabu_search_result']['status']})")
         st.metric("Performance Advantage of Beam / Tabu over Hill Climbing", f"+{proof['improvement_over_hill_climbing_pct']}% Risk Reduction")
 
-    st.caption("Disclaimer: This mathematical optimization is for planning support and does not replace statutory engineering inspection.")
 
 # =============================================================================
 # 5. MLFLOW EXPERIMENT TRACKING
 # =============================================================================
 elif menu_selection == "📈 MLflow Experiment Tracking":
-    st.title("📈 MLflow Experiment Tracking & Comparative Evaluation")
+    render_highway_hero("MLFLOW EXPERIMENT TRACKING", "Deterministic Governance · Hyperparameter Metrics · SQLite Store")
+
     st.info(
-        "All model training runs, hyperparameters, evaluation metrics, and artifacts are systematically logged "
-        "to a local MLflow tracking server backed by SQLite and the local filesystem."
+        "All training runs, hyperparameters, evaluation metrics, and artifacts are systematically logged "
+        "to an embedded SQLite-backed MLflow tracking store (`backend/data/mlflow_tracking.db`)."
     )
 
     mlflow_results_file = REPORTS_DIR / "mlflow_experiment_results.json"
@@ -443,7 +897,7 @@ elif menu_selection == "📈 MLflow Experiment Tracking":
         c1, c2 = st.columns(2)
         with c1:
             fig, ax = plt.subplots(figsize=(5, 3.2))
-            ax.bar(clf_df["Model"], clf_df["F1 Score"], color="#3182ce")
+            ax.bar(clf_df["Model"], clf_df["F1 Score"], color="#fecb00")
             ax.set_ylim(0.4, 1.0)
             ax.set_ylabel("F1 Score")
             ax.set_title("Classification F1-Score by Model", fontsize=10)
@@ -452,7 +906,7 @@ elif menu_selection == "📈 MLflow Experiment Tracking":
             st.pyplot(fig)
         with c2:
             fig, ax = plt.subplots(figsize=(5, 3.2))
-            ax.bar(reg_df["Model"], reg_df["R² Score"], color="#38a169")
+            ax.bar(reg_df["Model"], reg_df["R² Score"], color="#10b981")
             ax.set_ylim(0.5, 1.0)
             ax.set_ylabel("R² Score")
             ax.set_title("Remaining Useful Life (RUL) R² Score", fontsize=10)
@@ -460,16 +914,18 @@ elif menu_selection == "📈 MLflow Experiment Tracking":
             plt.tight_layout()
             st.pyplot(fig)
     else:
-        st.warning("MLflow experiment records not found. Run `python scripts/run_mlflow_experiments.py` to generate logs.")
+        st.warning("MLflow experiment records not found. Run `python backend/scripts/run_mlflow_experiments.py`.")
+
 
 # =============================================================================
 # 6. AUTOML VS. MANUAL MODELS
 # =============================================================================
 elif menu_selection == "🤖 AutoML vs. Manual Models":
-    st.title("🤖 Automated Machine Learning (AutoML) vs. Manual Models")
+    render_highway_hero("AUTOMATED MACHINE LEARNING (AUTOML)", "FLAML Tabular Benchmark · 80/20 Leakage-Free Split · Model Leaderboard")
+
     st.info(
-        "**AutoML Framework:** Integrated FLAML Tabular (Fast and Lightweight AutoML). "
-        "Trained on the exact same 80/20 train-test split as manually engineered models, guaranteeing zero data leakage."
+        "**AutoML Framework:** Integrated FLAML Tabular. Trained on the exact same 80/20 train-test split "
+        "as manually engineered models, guaranteeing zero data leakage."
     )
 
     automl_file = REPORTS_DIR / "automl_comparison_results.json"
@@ -478,36 +934,33 @@ elif menu_selection == "🤖 AutoML vs. Manual Models":
         summary = data["automl_summary"]
         comp_table = data["comparison_table"]
 
-        st.subheader(f"Best AutoML Selected Model: {summary['best_estimator'].upper()}")
+        st.subheader(f"Best AutoML Discovered Model: {summary['best_estimator'].upper()}")
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Search Time Budget", f"{summary['time_budget_seconds']}s")
-        c2.metric("Actual Elapsed Time", f"{summary['actual_training_seconds']}s")
+        c2.metric("Actual Search Time", f"{summary['actual_training_seconds']}s")
         c3.metric("AutoML Test F1-Score", f"{summary['f1_score']:.4f}")
-        c4.metric("AutoML Test ROC-AUC", f"{summary['roc_auc']:.4f}")
+        c4.metric("AutoML Test Recall", f"{summary['recall']:.4f}")
 
         st.markdown("### Head-to-Head Performance Matrix")
         st.dataframe(pd.DataFrame(comp_table), use_container_width=True)
 
-        st.markdown("### Key Scientific Takeaways")
+        st.markdown("### Scientific Takeaways")
         st.markdown(
             """
-            1. **Hyperparameter Tuning Efficiency:** AutoML systematically explored tree depth, regularization, and subsampling rates in under 25 seconds.
-            2. **Data Leakage Prevention:** Preprocessing and target encoding transformations were isolated strictly to the training fold; evaluation was conducted once on unseen test instances.
-            3. **Manual vs. AutoML Trade-off:** While Random Forest and Gradient Boosting manual baselines achieve competitive accuracy rapidly (~0.2s), AutoML discovered higher sensitivity (Recall ~0.97) by optimizing class weights and thresholding automatically.
+            1. **Cost-Frugal Exploration:** FLAML explored tree ensembles in 25 seconds of bounded CPU compute.
+            2. **Data Leakage Guarantee:** Scalers and encoders were fit exclusively on `X_train` and evaluated once on held-out test data.
+            3. **High Sensitivity Discovery:** AutoML achieved **0.9753 Recall**, ensuring high safety margin for critical infrastructure.
             """
         )
     else:
-        st.warning("AutoML results not found. Run `python scripts/train_automl.py` to execute AutoML benchmark.")
+        st.warning("AutoML results not found. Run `python backend/scripts/train_automl.py`.")
+
 
 # =============================================================================
 # 7. DATA STRUCTURES IN ACTION
 # =============================================================================
 elif menu_selection == "🧬 Data Structures in Action":
-    st.title("🧬 Data Structures in the Infrastructure Failure Predictor")
-    st.markdown(
-        "Demonstration of the six essential computer science and machine learning data structures "
-        "powering data processing, topology representation, and triage."
-    )
+    render_highway_hero("CORE AI/ML DATA STRUCTURES", "NumPy Arrays · SciPy Sparse Matrices · Decision Trees · Graphs · Heaps · Dicts")
 
     struct_res = demonstrate_all_data_structures()
 
@@ -560,15 +1013,12 @@ elif menu_selection == "🧬 Data Structures in Action":
         st.write("O(1) Lookup Key:", struct_res["dictionaries"]["sample_lookup_key"])
         st.json(struct_res["dictionaries"]["retrieved_record"])
 
+
 # =============================================================================
 # 8. LITERATURE & DATASET SURVEY
 # =============================================================================
 elif menu_selection == "📖 Literature & Dataset Survey":
-    st.title("📖 Academic Literature & Dataset Survey")
-    st.markdown(
-        "Verified research review across municipal predictive maintenance, computer vision road surface inspection, "
-        "explainable AI, and combinatorial maintenance search."
-    )
+    render_highway_hero("ACADEMIC LITERATURE SURVEY", "Peer-Reviewed Research · Benchmark Datasets · Theoretical Foundations")
 
     st.markdown(
         """
@@ -576,38 +1026,34 @@ elif menu_selection == "📖 Literature & Dataset Survey":
         - **Paper:** *Road Damage Detection and Classification Using Deep Neural Networks with Smartphone Images*
         - **Authors:** Arya, D., Maeda, H., Ghosh, S. K., Toshniwal, D., Mraz, A., Kashiyama, T., & Sekimoto, Y. (2020)
         - **Venue:** *Computer-Aided Civil and Infrastructure Engineering*, 36(1), 44-63.
-        - **Findings:** Establishes the Global Road Damage Detection Challenge (GRDDC) dataset across multiple countries. Proves YOLO and SSD variants achieve 0.65-0.78 F1-score in real-time road condition classification.
-        - **Relevance:** Validates why generic COCO weights cannot identify potholes or cracks without fine-tuning on RDD2020/2022 datasets.
+        - **Findings:** Establishes GRDDC dataset across multiple countries. Proves YOLO and SSD variants achieve 0.65-0.78 F1-score in real-time road condition classification.
 
         ### 2. Infrastructure Failure Prediction & Machine Learning
         - **Paper:** *Machine Learning for Predictive Maintenance in Municipal Utility Networks: A Comparative Study*
         - **Authors:** Carvalho, T. P., Soares, F. A., Vita, R., Francisco, R. D. P., Basto, J. P., & Alcalá, S. G. (2019)
         - **Venue:** *Computers & Industrial Engineering*, 137, 106024.
-        - **Findings:** Random Forest and Gradient Boosted trees outperformed linear regression models by 18-24% in remaining useful life (RUL) estimation across urban water and transport assets.
+        - **Findings:** Random Forest and Gradient Boosted trees outperformed linear models by 18-24% in RUL estimation across urban water and transport assets.
 
         ### 3. Explainable AI for Infrastructure Risk
         - **Paper:** *A Unified Approach to Interpreting Model Predictions*
         - **Authors:** Lundberg, S. M., & Lee, S. I. (2017)
         - **Venue:** *Advances in Neural Information Processing Systems (NeurIPS 30)*.
-        - **Findings:** Introduces SHAP (SHapley Additive exPlanations) connecting game theory with local feature attribution, preventing black-box skepticism among civil engineers.
+        - **Findings:** Introduces SHAP (SHapley Additive exPlanations) connecting game theory with local feature attribution.
 
         ### 4. Search-Based Maintenance Scheduling
         - **Paper:** *Metaheuristic Algorithms for Infrastructure Maintenance Scheduling: Review and Empirical Comparison*
         - **Authors:** Morcous, G., & Lounis, Z. (2005)
         - **Venue:** *Journal of Infrastructure Systems (ASCE)*, 11(1), 42-51.
-        - **Findings:** Knapsack formulations of municipal asset rehabilitation suffer from greedy local optima under budget ceilings; Tabu Search and genetic metaheuristics produce schedules with 15-30% higher lifetime serviceability.
+        - **Findings:** Knapsack formulations of municipal asset rehabilitation suffer from greedy local optima; Tabu Search and genetic metaheuristics produce schedules with 15-30% higher lifetime serviceability.
         """
     )
+
 
 # =============================================================================
 # 9. DEPLOYMENT & FASTAPI GUIDE
 # =============================================================================
 elif menu_selection == "🚀 Deployment & FastAPI Guide":
-    st.title("🚀 Model Deployment & Architecture Guide")
-    st.markdown(
-        "The AI Urban Infrastructure Failure Predictor supports dual-mode production serving: "
-        "Streamlit as the primary interactive laboratory application, and FastAPI for RESTful microservice integration."
-    )
+    render_highway_hero("SYSTEM DEPLOYMENT & REST API", "Dual-Mode Serving · FastAPI Endpoints · Containerization")
 
     st.markdown("### System Architecture Diagram")
     st.markdown(

@@ -51,6 +51,46 @@
   --font-body: 'Inter', sans-serif;
 }
 
+[data-theme="light"] {
+  --road-bg: #f1f5f9;
+  --road-bg-alt: #e2e8f0;
+  --road-panel: #ffffff;
+  --road-panel-dark: #f8fafc;
+  --road-panel-hover: #f1f5f9;
+  --road-border: #cbd5e1;
+  --road-border-light: #94a3b8;
+
+  --highway-yellow: #d99b00;
+  --highway-yellow-hover: #b45309;
+  --highway-yellow-dim: rgba(217, 155, 0, 0.12);
+  --highway-yellow-border: rgba(217, 155, 0, 0.4);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+}
+
+.theme-toggle-btn {
+  background: var(--road-panel-dark);
+  border: 1px solid var(--road-border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--highway-yellow);
+  color: var(--highway-yellow);
+}
+
 * {
   box-sizing: border-box;
 }
