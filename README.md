@@ -1053,7 +1053,7 @@ To prevent prompt injection and unauthorized execution, all application actions 
 - `navigate`: Validates target pages against `ALLOWLISTED_PAGES`. Arbitrary routes or shell commands are strictly rejected.
 
 ### Automated Testing Suite
-The test suite in [`backend/scripts/test_rover_chat.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/scripts/test_rover_chat.py) verifies 12 core requirements:
+The test suite in [`backend/scripts/test_rover_chat.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/scripts/test_rover_chat.py) verifies 14 core requirements across ROVER and realistic Indian corridor predictions:
 ```bash
 python backend/scripts/test_rover_chat.py
 ```
@@ -1069,6 +1069,43 @@ python backend/scripts/test_rover_chat.py
 - Test 10: Allowlist protects against unauthorized actions.
 - Test 11: Deterministic guided workflows operate seamlessly without API keys.
 - Test 12: FastAPI `/api/chat` and `/api/chat/status` endpoints verified.
+- Test 13: Indian location resolution, state mapping, and defensible feature mapping.
+- Test 14: Realistic corridor assessment API and backward compatibility.
+
+---
+
+## 30. Predict Corridor Risk: Google Maps, Indian GIS Corridors & Realistic Field Inputs
+
+### Problem Solved
+The legacy prediction interface suffered from two major limitations:
+1. Google Maps integration was disconnected from the primary prediction workflow.
+2. The submission form required 15 unrealistic numerical inputs (such as arbitrary percentage corrosion, percentage traffic density, exact mechanical load in tons, and exact days since inspection) that civil engineers cannot feasibly know during an on-site field survey.
+
+### Restored Google Maps & GIS Corridor Navigator
+- **Two-Column Responsive Layout:** Desktop arranges Location Search & Interactive Map on the left, with the Simplified Field Form on the right (collapsing vertically on mobile).
+- **Google Maps Platform Integration:** Uses Maps JavaScript API and Places Autocomplete restricted to India (`country: 'in'`). Supports interactive address search, map click marker placement, and reverse geocoding.
+- **Graceful Zero-Key Fallback:** If `VITE_GOOGLE_MAPS_API_KEY` is not provided, the interface seamlessly activates the **Indian Corridor Navigator**—an interactive corridor selector featuring curated Indian civil arteries (Bandra-Worli Sea Link, Pune-Mumbai Expressway, Atal Setu MTHL, Outer Ring Road Bengaluru, Yamuna Expressway, Vidyasagar Setu, Samruddhi Mahamarg, and Chennai Bypass) with manual coordinate overrides.
+
+### Real Indian Geography & Meteorological Profiles
+- **Zone Resolution:** Indian states and addresses are mapped to trained regional zones (`West`, `South`, `North`, `East`, `Central`, `Industrial`).
+- **Climate Baselines:** Regional IMD climate profiles supply defensible baseline rainfall (e.g., Coastal West ~1,850 mm, Indo-Gangetic North ~800 mm, Deccan South ~1,050 mm) and seasonal temperatures.
+
+### Simplified 5–6 Input Field Assessment
+The long form is replaced with observable civil engineering parameters:
+1. **Infrastructure Asset Type:** Road, Bridge, Water Pipeline, Drainage, Streetlight, Electrical Pole (matches trained model).
+2. **Primary Material:** Asphalt, Concrete, Steel, Composite, Copper, PVC (auto-suggested by asset type).
+3. **Approximate Asset Age:** Years in service with an "Unknown" option defaulting to median dataset age.
+4. **Current Visible Physical Condition:**
+   - *Good* (no major visible deterioration; maps to structural health 85, corrosion 15)
+   - *Fair* (minor cracking or weathering; maps to structural health 60, corrosion 42)
+   - *Poor* (substantial cracking, potholes, exposed rebar; maps to structural health 35, corrosion 75)
+   - *Unknown* (uses benchmark dataset medians)
+5. **Traffic Volume / Usage Intensity:** Low, Moderate, Heavy, or Unknown.
+6. **Maintenance Recency:** Within last year (< 1 yr), 1–3 years ago, > 3 years ago, or Unknown.
+7. **Optional Observations:** Qualitative field notes with a link to OpenCV computer vision for distress photos.
+
+### Preserved Machine Learning Architecture
+All inputs are transformed via `app/utils/indian_geo.py` into the exact numerical feature space expected by the trained Random Forest classifier (`model_bundle.pkl`). The model weights, scaler, and pipeline remain authentic, guaranteeing transparent, reproducible inferences.
 
 ---
 

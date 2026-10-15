@@ -42,10 +42,24 @@ def init_db():
             remaining_useful_life REAL,
             priority TEXT,
             recommendation TEXT,
+            location_address TEXT,
+            latitude REAL,
+            longitude REAL,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         '''
     )
+    # Ensure columns exist if table was already created
+    for col_def in [
+        ('location_address', 'TEXT'),
+        ('latitude', 'REAL'),
+        ('longitude', 'REAL'),
+    ]:
+        try:
+            connection.execute(f"ALTER TABLE prediction_history ADD COLUMN {col_def[0]} {col_def[1]}")
+        except Exception:
+            pass
+
     connection.commit()
     connection.close()
 
@@ -53,12 +67,18 @@ def init_db():
 def save_prediction_history(record: dict):
     init_db()
     connection = sqlite3.connect(DB_PATH)
+    loc = record.get('location') or {}
+    addr = loc.get('address') or record.get('location_address') or record.get('address')
+    lat = loc.get('latitude') or record.get('latitude')
+    lng = loc.get('longitude') or record.get('longitude')
+
     connection.execute(
         '''
         INSERT INTO prediction_history (
             asset_id, asset_type, zone, failure_probability, risk_level,
-            remaining_useful_life, priority, recommendation
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            remaining_useful_life, priority, recommendation,
+            location_address, latitude, longitude
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             record.get('asset_id'),
             record.get('asset_type'),
@@ -68,6 +88,9 @@ def save_prediction_history(record: dict):
             record.get('remaining_useful_life'),
             record.get('priority'),
             record.get('recommendation'),
+            addr,
+            lat,
+            lng,
         )
     )
     connection.commit()
@@ -78,7 +101,8 @@ def get_prediction_history(limit: int = 10):
     init_db()
     connection = sqlite3.connect(DB_PATH)
     rows = connection.execute(
-        '''SELECT asset_id, asset_type, zone, failure_probability, risk_level, remaining_useful_life, priority, recommendation
+        '''SELECT asset_id, asset_type, zone, failure_probability, risk_level,
+                  remaining_useful_life, priority, recommendation, location_address, latitude, longitude
         FROM prediction_history ORDER BY id DESC LIMIT ?''',
         (limit,),
     ).fetchall()
@@ -93,6 +117,9 @@ def get_prediction_history(limit: int = 10):
             'remaining_useful_life': row[5],
             'priority': row[6],
             'recommendation': row[7],
+            'location_address': row[8],
+            'latitude': row[9],
+            'longitude': row[10],
         }
         for row in rows
     ]

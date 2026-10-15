@@ -241,6 +241,116 @@ def test_api_routes():
     print("PASS: FastAPI /api/chat endpoints verified with guided and free-text requests.")
 
 
+def test_indian_location_resolution():
+    from app.utils.indian_geo import resolve_indian_zone, map_realistic_inputs_to_model_features, POPULAR_INDIAN_CORRIDORS
+
+    # Test zone resolution for Indian states
+    assert resolve_indian_zone(state="Maharashtra") == "West"
+    assert resolve_indian_zone(state="Karnataka") == "South"
+    assert resolve_indian_zone(state="Delhi") == "North"
+    assert resolve_indian_zone(state="West Bengal") == "East"
+    assert resolve_indian_zone(state="Madhya Pradesh") == "Central"
+
+    # Test address string matching
+    assert resolve_indian_zone(address="Bandra-Worli Sea Link, Mumbai, Maharashtra") == "West"
+    assert resolve_indian_zone(address="Outer Ring Road, Bengaluru, Karnataka") == "South"
+    assert resolve_indian_zone(address="Yamuna Expressway, Greater Noida, Uttar Pradesh") == "North"
+
+    # Test popular corridors catalog
+    assert len(POPULAR_INDIAN_CORRIDORS) >= 10
+    assert any("Sea Link" in c["name"] for c in POPULAR_INDIAN_CORRIDORS)
+
+    # Test mapping realistic simplified inputs into trained model feature space
+    raw = {
+        "asset_type": "Road",
+        "condition": "Poor",
+        "traffic_level": "Heavy",
+        "maintenance_recency": "> 3 years",
+        "age_years": 14,
+        "location": {
+            "address": "Mumbai - Pune Expressway, Maharashtra, India",
+            "latitude": 18.7560,
+            "longitude": 73.4116,
+            "city": "Pune",
+            "state": "Maharashtra",
+        },
+    }
+    model_record, meta = map_realistic_inputs_to_model_features(raw)
+    assert model_record["zone"] == "West"
+    assert model_record["structural_score"] == 35.0
+    assert model_record["corrosion_level"] == 75.0
+    assert model_record["traffic_density"] == 85.0
+    assert model_record["days_since_maintenance"] == 1350.0
+    assert meta["city"] == "Pune"
+    assert meta["state"] == "Maharashtra"
+    print("PASS: Indian location resolution and defensible feature mapping verified.")
+
+
+def test_realistic_corridor_prediction_api():
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    client = TestClient(app)
+
+    # Test GET /api/corridors
+    corridors_res = client.get("/api/corridors")
+    assert corridors_res.status_code == 200
+    corridors_list = corridors_res.json()
+    assert len(corridors_list) >= 10
+
+    # Test POST /api/predict with realistic corridor input
+    assessment_req = {
+        "asset_type": "Bridge",
+        "material": "Concrete",
+        "age_years": 25,
+        "condition": "Fair",
+        "traffic_level": "Heavy",
+        "maintenance_recency": "1-3 years",
+        "location": {
+            "address": "Bandra-Worli Sea Link, Mumbai, Maharashtra 400050, India",
+            "latitude": 19.0330,
+            "longitude": 72.8164,
+            "city": "Mumbai",
+            "state": "Maharashtra",
+        },
+    }
+    pred_res = client.post("/api/predict", json=assessment_req)
+    assert pred_res.status_code == 200
+    pred_data = pred_res.json()
+    assert "failure_probability" in pred_data
+    assert "risk_level" in pred_data
+    assert "remaining_useful_life" in pred_data
+    assert pred_data["location"]["city"] == "Mumbai"
+    assert pred_data["zone"] == "West"
+    assert pred_data["key_factors"]["structural_score"] == 60.0
+
+    # Test POST /api/predict with legacy 15-field input for full backward compatibility
+    legacy_req = {
+        "asset_id": "ASSET-001",
+        "asset_type": "Road",
+        "zone": "North",
+        "material": "Asphalt",
+        "age_years": 10.0,
+        "traffic_density": 60.0,
+        "average_load": 90.0,
+        "annual_rainfall": 800.0,
+        "average_temperature": 26.0,
+        "maintenance_count": 4.0,
+        "days_since_maintenance": 150.0,
+        "days_since_inspection": 120.0,
+        "structural_score": 70.0,
+        "corrosion_level": 30.0,
+        "previous_failures": 1,
+        "usage_intensity": 65.0,
+    }
+    legacy_res = client.post("/api/predict", json=legacy_req)
+    assert legacy_res.status_code == 200
+    legacy_data = legacy_res.json()
+    assert "failure_probability" in legacy_data
+
+    print("PASS: Realistic corridor assessment API and backward compatibility verified.")
+
+
 if __name__ == "__main__":
     test_system_prompt()
     test_provider_status_unconfigured()
@@ -254,6 +364,8 @@ if __name__ == "__main__":
     test_unsupported_actions_not_executed()
     test_deterministic_without_api_keys()
     test_api_routes()
-    print("\n=======================================================")
-    print("ALL 12 ROVER BACKEND & GUIDED WORKFLOW TESTS PASSED!")
-    print("=======================================================")
+    test_indian_location_resolution()
+    test_realistic_corridor_prediction_api()
+    print("\n===================================================================")
+    print("ALL ROVER BACKEND, GUIDED WORKFLOWS & REALISTIC PREDICT TESTS PASSED!")
+    print("===================================================================")

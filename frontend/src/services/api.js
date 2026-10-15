@@ -10,6 +10,7 @@ const client = axios.create({
 
 export const getHealth = () => client.get('/health').then(({ data }) => data);
 export const getDashboard = () => client.get('/dashboard').then(({ data }) => data);
+export const getPopularCorridors = () => client.get('/corridors').then(({ data }) => data);
 export const predictRisk = (payload) => client.post('/predict', payload).then(({ data }) => data);
 export const getAnalytics = () => client.get('/analytics').then(({ data }) => data);
 export const getInfrastructure = () => client.get('/infrastructure').then(({ data }) => data);

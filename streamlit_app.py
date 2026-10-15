@@ -1698,95 +1698,222 @@ elif current_page == "maps":
 elif current_page == "prediction":
     st.title("🔮 03. Tabular Failure Prediction & RUL")
     st.info(
-        "**Engineering Telemetry Evaluation:** This module computes structural failure probability and Remaining Useful Life (RUL) "
+        "**Engineering Telemetry & Corridor Risk Evaluation:** This module evaluates structural failure probability and Remaining Useful Life (RUL) "
         "using Supervised Random Forest and GBDT algorithms trained on 2,200 municipal infrastructure records."
     )
 
-    c_form, c_result = st.columns([1.1, 0.9])
+    tab_realistic, tab_legacy = st.tabs([
+        "🗺️ Real Indian Corridor Assessment (Google Maps + Field Inputs)",
+        "⚙️ Advanced Technical Sensor Overrides",
+    ])
 
-    with c_form:
-        st.subheader("Asset Specifications & Sensor Inputs")
-        with st.form("prediction_form"):
-            col_a, col_b = st.columns(2)
-            with col_a:
-                asset_id = st.text_input("Asset Identifier", "ASSET-HWY-104")
-                asset_type = st.selectbox("Asset Type", ["Bridge", "Road", "Pipeline", "Drainage", "Electrical Pole", "Streetlight"])
-                zone = st.selectbox("Municipal Zone", ["Central", "North", "South", "Industrial", "Residential"])
-                material = st.selectbox("Material Composition", ["Steel", "Concrete", "Asphalt", "Composite", "Copper"])
-                age_years = st.slider("Asset Age (Years)", 0.5, 50.0, 22.0, 0.5)
-                traffic_density = st.slider("Daily Traffic Density Index", 5.0, 100.0, 72.0, 1.0)
-                average_load = st.slider("Average Mechanical Load (Tons)", 10.0, 200.0, 120.0, 1.0)
-            with col_b:
-                annual_rainfall = st.slider("Annual Precipitation (mm)", 300.0, 3000.0, 1850.0, 50.0)
-                average_temp = st.slider("Average Ambient Temp (°C)", 5.0, 45.0, 31.0, 0.5)
-                maintenance_count = st.number_input("Past Maintenance Events", 0, 20, 2)
-                days_since_maint = st.slider("Days Since Last Maintenance", 0, 730, 260, 5)
-                days_since_insp = st.slider("Days Since Last Inspection", 0, 730, 140, 5)
-                structural_score = st.slider("Structural Health Score (0-100)", 0.0, 100.0, 44.0, 0.5)
-                corrosion_level = st.slider("Corrosion / Wear Level (%)", 0.0, 100.0, 62.0, 0.5)
-                previous_failures = st.number_input("Recorded Previous Failures", 0, 10, 2)
-                usage_intensity = st.slider("Operational Usage Intensity", 0.0, 100.0, 75.0, 1.0)
+    with tab_realistic:
+        st.markdown("### 📍 Location-Aware Corridor Risk Evaluation")
+        st.markdown(
+            "Search any road, bridge, or corridor across India on Google Maps and select observable field condition indicators. "
+            "Our model translates regional climate, asset age, and physical distress into calibrated structural failure risks."
+        )
 
-            submitted = st.form_submit_button("Run Predictive Risk Inference", use_container_width=True)
+        render_google_maps_section(
+            default_query="Mumbai - Pune Expressway, Maharashtra",
+            height=380,
+            key_prefix="pred_corridor",
+        )
 
-    with c_result:
-        st.subheader("Model Assessment & Action Plan")
-        if submitted:
-            record = {
-                "asset_id": asset_id,
-                "asset_type": asset_type,
-                "zone": zone,
-                "material": material,
-                "age_years": age_years,
-                "traffic_density": traffic_density,
-                "average_load": average_load,
-                "annual_rainfall": annual_rainfall,
-                "average_temperature": average_temp,
-                "maintenance_count": maintenance_count,
-                "days_since_maintenance": days_since_maint,
-                "days_since_inspection": days_since_insp,
-                "structural_score": structural_score,
-                "corrosion_level": corrosion_level,
-                "previous_failures": previous_failures,
-                "usage_intensity": usage_intensity,
-            }
-            try:
-                res = build_prediction_payload(record)
-                prob_pct = res["failure_probability"] * 100
-                risk_lvl = res["risk_level"]
-                rul = res["remaining_useful_life"]
-                priority = res["priority"]
+        rf_c1, rf_c2 = st.columns([1.1, 0.9])
+        with rf_c1:
+            st.subheader("Field Condition & Structural Specifications")
+            with st.form("realistic_corridor_form"):
+                cur_loc = st.session_state.get("pred_corridor_map_query", "Mumbai - Pune Expressway, Maharashtra, India")
+                st.markdown(f"📍 **Assessed Corridor:** `{cur_loc}`")
 
-                border_color = "#ef4444" if risk_lvl == "HIGH" else "#f59e0b" if risk_lvl == "MEDIUM" else "#10b981"
-                st.markdown(
-                    f"""
-                    <div style="background: rgba(19, 34, 56, 0.85); border: 2px solid {border_color}; border-left: 8px solid {border_color}; border-radius: 8px; padding: 18px; margin-bottom: 18px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: {border_color};">
-                                PREDICTED RISK LEVEL: {risk_lvl}
-                            </span>
-                            <span style="background: {border_color}; color: #ffffff; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-size: 12px;">
-                                PRIORITY: {priority}
-                            </span>
+                col_r1, col_r2 = st.columns(2)
+                with col_r1:
+                    r_asset_type = st.selectbox(
+                        "Infrastructure Asset Type",
+                        ["Road", "Bridge", "Pipeline", "Drainage", "Electrical Pole", "Streetlight"],
+                        key="real_asset_type",
+                    )
+                    default_mats = {
+                        "Road": "Asphalt", "Bridge": "Concrete", "Pipeline": "Steel",
+                        "Drainage": "Concrete", "Streetlight": "Steel", "Electrical Pole": "Concrete",
+                    }
+                    r_material = st.selectbox(
+                        "Primary Material Composition",
+                        ["Asphalt", "Concrete", "Steel", "Composite", "Copper", "PVC"],
+                        index=["Asphalt", "Concrete", "Steel", "Composite", "Copper", "PVC"].index(default_mats.get(r_asset_type, "Concrete")),
+                        key="real_material",
+                    )
+                    r_age_unknown = st.checkbox("Asset age unknown", value=False, key="real_age_unk")
+                    r_age = st.number_input("Approximate Asset Age (Years)", min_value=0.0, max_value=100.0, value=12.0, step=1.0, disabled=r_age_unknown, key="real_age")
+                with col_r2:
+                    r_condition = st.selectbox(
+                        "Visible Physical Condition",
+                        ["Good — sound integrity, minor/no wear", "Fair — moderate wear, minor cracking", "Poor — substantial cracking/potholes/rebar", "Unknown — unaudited visual status"],
+                        index=1,
+                        key="real_condition",
+                    )
+                    r_traffic = st.selectbox(
+                        "Traffic Volume / Usage Intensity",
+                        ["Heavy — multi-lane highway/trunk corridor", "Moderate — arterial/suburban corridor", "Low — residential/rural corridor", "Unknown — unmonitored volume"],
+                        index=0,
+                        key="real_traffic",
+                    )
+                    r_recency = st.selectbox(
+                        "Maintenance Recency",
+                        ["Within the last year (< 1 yr)", "1–3 years ago", "More than 3 years ago (> 3 yrs)", "History unknown"],
+                        index=1,
+                        key="real_recency",
+                    )
+
+                r_notes = st.text_input("Engineering Inspection Observations (Optional)", placeholder="e.g. Surface rutting observed near bridge expansion joint...", key="real_notes")
+                r_submit = st.form_submit_button("Assess Corridor Infrastructure Risk →", use_container_width=True)
+
+        with rf_c2:
+            st.subheader("Model Assessment & Action Plan")
+            if r_submit:
+                cond_clean = "Good" if "Good" in r_condition else "Poor" if "Poor" in r_condition else "Unknown" if "Unknown" in r_condition else "Fair"
+                traffic_clean = "Heavy" if "Heavy" in r_traffic else "Low" if "Low" in r_traffic else "Unknown" if "Unknown" in r_traffic else "Moderate"
+                recency_clean = "< 1 year" if "< 1" in r_recency else "> 3 years" if "> 3" in r_recency else "Unknown" if "unknown" in r_recency.lower() else "1-3 years"
+
+                realistic_payload = {
+                    "asset_type": r_asset_type,
+                    "material": r_material,
+                    "age_years": None if r_age_unknown else r_age,
+                    "condition": cond_clean,
+                    "traffic_level": traffic_clean,
+                    "maintenance_recency": recency_clean,
+                    "observation_notes": r_notes,
+                    "location": {
+                        "address": cur_loc,
+                    },
+                }
+                try:
+                    res = build_prediction_payload(realistic_payload)
+                    prob_pct = res["failure_probability"] * 100
+                    risk_lvl = res["risk_level"]
+                    rul = res["remaining_useful_life"]
+                    priority = res["priority"]
+                    b_color = "#ef4444" if risk_lvl == "HIGH" else "#f59e0b" if risk_lvl == "MEDIUM" else "#10b981"
+
+                    st.markdown(
+                        f"""
+                        <div style="background: rgba(19, 34, 56, 0.95); border: 2px solid {b_color}; border-left: 8px solid {b_color}; border-radius: 8px; padding: 18px; margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: {b_color};">
+                                    PREDICTED RISK: {risk_lvl}
+                                </span>
+                                <span style="background: {b_color}; color: #ffffff; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-size: 12px;">
+                                    PRIORITY: {priority}
+                                </span>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 14px; color: #ffffff;">
+                                <strong>Failure Probability:</strong> <span style="font-size: 18px; font-weight: 700; color: {b_color};">{prob_pct:.1f}%</span> · <strong>Zone:</strong> {res.get('zone', 'West')}
+                            </div>
+                            <div style="margin-top: 6px; font-size: 12px; color: #cbd5e1;">
+                                📍 <em>{cur_loc}</em>
+                            </div>
                         </div>
-                        <div style="margin-top: 8px; font-size: 15px; color: #ffffff;">
-                            <strong>Failure Probability:</strong> <span style="font-size: 18px; font-weight: 700; color: {border_color};">{prob_pct:.1f}%</span>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    st.metric("Estimated Remaining Useful Life (RUL)", f"{rul:.1f} Years", f"Evaluated for {r_asset_type}")
+                    st.markdown(f"**Recommended Maintenance Protocol:**\n> ⚠️ *{res['recommendation']}*")
+
+                    st.markdown("##### Calibrated Structural Factors")
+                    st.bar_chart(pd.Series(res["key_factors"]))
+                except Exception as e:
+                    st.error(f"Inference error: {e}")
+            else:
+                st.info("Select your corridor on the map, verify the observable conditions, and click **Assess Corridor Infrastructure Risk**.")
+
+    with tab_legacy:
+        st.subheader("Raw 15-Sensor Telemetry Overrides (Academic Benchmark)")
+        c_form, c_result = st.columns([1.1, 0.9])
+
+        with c_form:
+            with st.form("legacy_prediction_form"):
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    asset_id = st.text_input("Asset Identifier", "ASSET-HWY-104")
+                    asset_type = st.selectbox("Asset Type", ["Bridge", "Road", "Pipeline", "Drainage", "Electrical Pole", "Streetlight"], key="leg_asset")
+                    zone = st.selectbox("Municipal Zone", ["West", "South", "North", "East", "Central", "Industrial"], key="leg_zone")
+                    material = st.selectbox("Material Composition", ["Steel", "Concrete", "Asphalt", "Composite", "Copper"], key="leg_mat")
+                    age_years = st.slider("Asset Age (Years)", 0.5, 50.0, 22.0, 0.5, key="leg_age")
+                    traffic_density = st.slider("Daily Traffic Density Index", 5.0, 100.0, 72.0, 1.0, key="leg_traffic")
+                    average_load = st.slider("Average Mechanical Load (Tons)", 10.0, 200.0, 120.0, 1.0, key="leg_load")
+                with col_b:
+                    annual_rainfall = st.slider("Annual Precipitation (mm)", 300.0, 3000.0, 1850.0, 50.0, key="leg_rain")
+                    average_temp = st.slider("Average Ambient Temp (°C)", 5.0, 45.0, 31.0, 0.5, key="leg_temp")
+                    maintenance_count = st.number_input("Past Maintenance Events", 0, 20, 2, key="leg_mcount")
+                    days_since_maint = st.slider("Days Since Last Maintenance", 0, 730, 260, 5, key="leg_dsm")
+                    days_since_insp = st.slider("Days Since Last Inspection", 0, 730, 140, 5, key="leg_dsi")
+                    structural_score = st.slider("Structural Health Score (0-100)", 0.0, 100.0, 44.0, 0.5, key="leg_struct")
+                    corrosion_level = st.slider("Corrosion / Wear Level (%)", 0.0, 100.0, 62.0, 0.5, key="leg_corr")
+                    previous_failures = st.number_input("Recorded Previous Failures", 0, 10, 2, key="leg_pf")
+                    usage_intensity = st.slider("Operational Usage Intensity", 0.0, 100.0, 75.0, 1.0, key="leg_usage")
+
+                submitted = st.form_submit_button("Run Raw Sensor Inference", use_container_width=True)
+
+        with c_result:
+            st.subheader("Model Assessment & Action Plan")
+            if submitted:
+                record = {
+                    "asset_id": asset_id,
+                    "asset_type": asset_type,
+                    "zone": zone,
+                    "material": material,
+                    "age_years": age_years,
+                    "traffic_density": traffic_density,
+                    "average_load": average_load,
+                    "annual_rainfall": annual_rainfall,
+                    "average_temperature": average_temp,
+                    "maintenance_count": maintenance_count,
+                    "days_since_maintenance": days_since_maint,
+                    "days_since_inspection": days_since_insp,
+                    "structural_score": structural_score,
+                    "corrosion_level": corrosion_level,
+                    "previous_failures": previous_failures,
+                    "usage_intensity": usage_intensity,
+                }
+                try:
+                    res = build_prediction_payload(record)
+                    prob_pct = res["failure_probability"] * 100
+                    risk_lvl = res["risk_level"]
+                    rul = res["remaining_useful_life"]
+                    priority = res["priority"]
+
+                    border_color = "#ef4444" if risk_lvl == "HIGH" else "#f59e0b" if risk_lvl == "MEDIUM" else "#10b981"
+                    st.markdown(
+                        f"""
+                        <div style="background: rgba(19, 34, 56, 0.85); border: 2px solid {border_color}; border-left: 8px solid {border_color}; border-radius: 8px; padding: 18px; margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: {border_color};">
+                                    PREDICTED RISK LEVEL: {risk_lvl}
+                                </span>
+                                <span style="background: {border_color}; color: #ffffff; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-size: 12px;">
+                                    PRIORITY: {priority}
+                                </span>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 15px; color: #ffffff;">
+                                <strong>Failure Probability:</strong> <span style="font-size: 18px; font-weight: 700; color: {border_color};">{prob_pct:.1f}%</span>
+                            </div>
                         </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
-                st.metric("Estimated Remaining Useful Life (RUL)", f"{rul:.1f} Years", "Prognostic Life Horizon")
-                st.markdown(f"**Recommended Maintenance Action:**\n> ⚠️ *{res['recommendation']}*")
+                    st.metric("Estimated Remaining Useful Life (RUL)", f"{rul:.1f} Years", "Prognostic Life Horizon")
+                    st.markdown(f"**Recommended Maintenance Action:**\n> ⚠️ *{res['recommendation']}*")
 
-                st.markdown("##### Primary Vulnerability Factors")
-                factors = res["key_factors"]
-                st.bar_chart(pd.Series(factors))
-            except Exception as e:
-                st.error(f"Inference error: {e}")
-        else:
-            st.info("Configure asset parameters on the left and click **Run Predictive Risk Inference**.")
+                    st.markdown("##### Primary Vulnerability Factors")
+                    factors = res["key_factors"]
+                    st.bar_chart(pd.Series(factors))
+                except Exception as e:
+                    st.error(f"Inference error: {e}")
+            else:
+                st.info("Configure asset parameters on the left and click **Run Raw Sensor Inference**.")
 
 
 # =============================================================================
