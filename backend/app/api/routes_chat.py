@@ -23,6 +23,9 @@ async def chat_with_rover(payload: ChatRequest):
         message=payload.message,
         history=history_dicts,
         provider_name=payload.provider,
+        workflow=payload.workflow,
+        step=payload.step,
+        selected_choice_id=payload.selected_choice_id,
     )
     return ChatResponse(**result)
 

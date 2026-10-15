@@ -215,7 +215,7 @@ To maintain strict academic integrity during faculty evaluation, the distinction
 | **Computer Vision Filtering** | OpenCV (CLAHE, Canny, Contour Morphology) | Segment macroscopic road defects & compute RDI | Grayscale road pavement image | Segmented contours, defect classes, and RDI score | **Implemented and verified** |
 | **Object Detection (Deep Learning)** | Ultralytics YOLO Architecture | Localize distress objects with bounding boxes | RGB road pavement image | Bounding boxes, class labels, and confidence scores | **Implemented and verified** |
 | **Search & Optimization** | Hill Climbing, Beam Search, Tabu Search | Solve constrained 0-1 Knapsack maintenance planning | Candidate repairs, budget, and labor limits | Optimal asset subset maximizing total risk reduction | **Implemented and verified** |
-| **Conversational AI / NLP** | Large Language Models (LLMs) / Chatbots | Conversational query answering and chat interface | Natural language user text prompt | Conversational natural language text response | **Planned / Not implemented** |
+| **Guided AI Assistant & NLP** | ROVER (Workflow State Machine + Gemini/Grok) | Task-oriented guided workflows & interactive co-pilot | User choice selection or natural language inquiry | Structured action cards, live data retrieval & navigation | **Implemented and verified** |
 
 ### Conceptual Distinctions for Examiners
 - **Machine Learning vs. Rule-Based AI:** The Random Forest classifier is purely *data-driven*, learning non-linear split thresholds from historical correlation patterns. Conversely, the maintenance recommendation engine is *knowledge-driven*, applying explicit expert rules ($P(\text{failure}) > 0.7 \land \text{structural\_score} < 50 \implies \text{CRITICAL}$) that do not rely on parameter learning.
@@ -994,6 +994,81 @@ Selected high-probability examination questions and technical answers:
 
 ### Q7: Why is RUL estimation treated as a regression task rather than classification?
 **Answer:** Remaining Useful Life is an inherently continuous physical quantity (years, operating hours, or thermal cycles). Treating it as classification would require artificial binning, losing granular prognostic information. Continuous regression allows municipal engineers to schedule capital asset replacements based on specific time horizons.
+
+---
+
+## 29. ROVER: Guided, Task-Oriented AI Infrastructure Assistant
+
+### Overview & Identity
+**ROVER** (**R**oad **O**perations & **V**ulnerability **E**valuation **R**obot) is an interactive, task-oriented AI assistant embedded across both the React and Streamlit dashboards. Unlike basic free-text chatbots, ROVER functions as a guided co-pilot that presents structured, contextual choice cards (3–4 choices per interaction step), leads users through multi-step engineering tasks, triggers real application actions, and supports free-form natural language dialogue.
+
+### Mascot Design & Theme Adaptation
+- **Visual Mascot:** High-resolution 3D robot mascot designed specifically for municipal road engineering, featuring an asphalt-ready hover base, road-sign hazard emblem, smart optical sensors, and expressive face-display states (`Happy`, `Thinking`, `Idea`, `Listening`).
+- **Highway Theme Support:** Fully responsive with dedicated **Dark Highway (Night Mode)** featuring asphalt tones, ambient gold glow, and amber highlights, and **Sunlit Road (Day Mode)** featuring crisp neutrals with blue and amber accents.
+
+### Core Architecture & State Machine
+ROVER employs a **hybrid architecture** that separates deterministic, trust-bounded application controls from LLM natural language generation:
+
+```mermaid
+graph TD
+    User([User Interaction]) --> CheckInput{Input Type}
+    
+    CheckInput -->|Choice Card Click| StateMachine[Deterministic Workflow Engine]
+    CheckInput -->|Free-Text Question| HybridHandler[Hybrid Context Processor]
+    
+    StateMachine --> AllowlistCheck{Allowlisted Action?}
+    AllowlistCheck -->|Yes: Real Action| ExecuteAction[Execute App Functions: Live Predictions / Search Optimization / Sample CV]
+    AllowlistCheck -->|No: Next Step / Explain| StateTransition[Transition Step & Return Next Choices]
+    
+    HybridHandler --> LLMProvider[Gemini 2.5 Flash / Grok 2 via LangChain/HTTPX]
+    LLMProvider --> Grounding[Ground with Live Portfolio Telemetry]
+    Grounding --> ContextualChoices[Infer Contextual Follow-Up Choices]
+    
+    ExecuteAction --> ResponseBuilder[Assemble Response + Navigation Route + Next Choices]
+    StateTransition --> ResponseBuilder
+    ContextualChoices --> ResponseBuilder
+    
+    ResponseBuilder --> UI[Render Bubble + Choice Cards + Back/Home Controls]
+```
+
+### Guided Workflows Implemented
+1. **Workflow A: Analyze Infrastructure Risk (`infrastructure_risk`):**
+   - *Options:* View available risk predictions, understand failure prediction, compare asset categories, interpret model metrics.
+   - *Real Action:* Executes `fetch_predictions` returning live counts from SQLite (2,200 assets, 348 high risk, 742 moderate risk, 16.8 yr average RUL) and routes directly to `/predict` or Tabular Failure Prediction.
+2. **Workflow B: Inspect Road Damage (`road_damage`):**
+   - *Options:* Detect surface distress, review Road Damage Index (RDI) formula, explore image-processing pipeline, view sample scans.
+   - *Real Action:* Executes `fetch_sample_cv` using real pavement scans (`sample_road_images`) and navigates directly to OpenCV distress inspection.
+3. **Workflow C: Plan Maintenance (`plan_maintenance`):**
+   - *Options:* Compare Hill Climbing vs. Beam vs. Tabu Search, review 0-1 Knapsack problem formulation, understand priority scoring, run live optimization benchmark.
+   - *Real Action:* Executes `fetch_optimization` using `run_optimization_comparison()` on actual municipal candidates with budget cap ($50,000) and labor limits (160 hrs). Demonstrates how Tabu Search avoids local optima traps.
+4. **Workflow D: Explore the Project (`explore_project`):**
+   - *Options:* Inspect system architecture, review ML classifiers and regressors, compare manual ML vs. AutoML (FLAML), inspect MLflow tracking, explore data structures (SciPy CSR sparse matrix 98% memory reduction).
+   - *Real Navigation:* Direct navigation to Executive Dashboard, Model Performance, Analytics, and About documentation.
+
+### Allowlisted Security Model
+To prevent prompt injection and unauthorized execution, all application actions are constrained to an explicit allowlist in `backend/app/ai/workflow_engine.py`:
+- `fetch_predictions`: Reads authentic portfolio telemetry from database routes.
+- `fetch_optimization`: Executes the combinatorial search optimizer with validated parameters.
+- `fetch_sample_cv`: Accesses authentic road distress image samples.
+- `navigate`: Validates target pages against `ALLOWLISTED_PAGES`. Arbitrary routes or shell commands are strictly rejected.
+
+### Automated Testing Suite
+The test suite in [`backend/scripts/test_rover_chat.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/scripts/test_rover_chat.py) verifies 12 core requirements:
+```bash
+python backend/scripts/test_rover_chat.py
+```
+- Test 1: System prompt generation and portfolio grounding.
+- Test 2: Unconfigured provider detection for Gemini and Grok.
+- Test 3: Safe unconfigured chat response with guidance.
+- Test 4: Empty message validation and default menu fallback.
+- Test 5: Initial main menu provides 4 top-level workflows.
+- Test 6: All 4 top-level workflow transitions produce correct choices.
+- Test 7: Real actions connected to actual backend data/optimization.
+- Test 8: Back and Home navigation across all workflow sub-steps.
+- Test 9: Invalid choice IDs rejected safely.
+- Test 10: Allowlist protects against unauthorized actions.
+- Test 11: Deterministic guided workflows operate seamlessly without API keys.
+- Test 12: FastAPI `/api/chat` and `/api/chat/status` endpoints verified.
 
 ---
 
