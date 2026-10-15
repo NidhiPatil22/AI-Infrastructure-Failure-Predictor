@@ -13,6 +13,10 @@ export const getDashboard = () => client.get('/dashboard').then(({ data }) => da
 export const predictRisk = (payload) => client.post('/predict', payload).then(({ data }) => data);
 export const getAnalytics = () => client.get('/analytics').then(({ data }) => data);
 export const getInfrastructure = () => client.get('/infrastructure').then(({ data }) => data);
+export const sendChatMessage = (message, history = [], provider = null) =>
+  client.post('/chat', { message, history, provider }).then(({ data }) => data);
+export const getChatStatus = (provider = null) =>
+  client.get('/chat/status', { params: provider ? { provider } : {} }).then(({ data }) => data);
 
 export function getApiErrorMessage(error) {
   if (!error?.response) {

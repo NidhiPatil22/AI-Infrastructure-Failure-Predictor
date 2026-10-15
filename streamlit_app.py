@@ -33,6 +33,9 @@ import pydeck as pdk
 import streamlit as st
 import streamlit.components.v1 as components
 
+import requests
+
+from app.ai.chat_service import chat_service
 from app.cv.road_damage_detector import RoadDamageDetector, generate_sample_road_images
 from app.model_service import build_prediction_payload, load_model_bundle
 from app.optimization.maintenance_scheduler import (
@@ -57,6 +60,8 @@ DATA_PATH = BACKEND_DIR / "data" / "urban_infrastructure_data.csv"
 SAMPLE_IMG_DIR = BACKEND_DIR / "data" / "sample_road_images"
 REPORTS_DIR = BACKEND_DIR / "reports"
 MODELS_DIR = BACKEND_DIR / "models"
+ASSETS_DIR = BACKEND_DIR / "data" / "assets"
+MASCOT_IMG_PATH = ASSETS_DIR / "rover_mascot.jpg"
 
 
 # =============================================================================
@@ -349,6 +354,252 @@ if is_night:
             align-items: center;
             justify-content: space-between;
         }
+        /* =====================================================================
+           ROVER AI INFRASTRUCTURE ASSISTANT (NIGHT THEME)
+           ===================================================================== */
+        .rover-container {
+            background: linear-gradient(135deg, #0d1624 0%, #132238 60%, #0a111a 100%);
+            border: 2px solid #fecb00;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin: 20px 0 28px 0;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 0 24px rgba(254, 203, 0, 0.06);
+            position: relative;
+        }
+        .rover-header-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed rgba(254, 203, 0, 0.35);
+            padding-bottom: 14px;
+        }
+        .rover-header-title {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            color: #fecb00 !important;
+            margin: 0 0 4px 0 !important;
+            letter-spacing: 1px !important;
+        }
+        .rover-header-sub {
+            font-size: 14.5px !important;
+            color: #cbd5e1 !important;
+            margin: 0 !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Mascot Column (Left) */
+        .rover-mascot-card {
+            background: #101c2b;
+            border: 1px solid #1e334d;
+            border-top: 3.5px solid #fecb00;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+            margin-bottom: 14px;
+        }
+        .mascot-avatar-wrapper {
+            position: relative;
+            width: 175px;
+            height: 175px;
+            margin: 0 auto 14px auto;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, #fecb00 0%, #1e334d 50%, #10b981 100%);
+            animation: roverFloatAnim 4s ease-in-out infinite;
+        }
+        .mascot-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #090f17;
+            border: 2px solid #090f17;
+            display: block;
+        }
+        .mascot-radar-pulse {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(254, 203, 0, 0.45);
+            animation: roverPulseAnim 2.6s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+            pointer-events: none;
+        }
+        @keyframes roverFloatAnim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+        }
+        @keyframes roverPulseAnim {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.18); opacity: 0; }
+        }
+        .rover-identity-name {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 26px !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            margin: 0 0 2px 0 !important;
+            letter-spacing: 1px !important;
+        }
+        .rover-identity-sub {
+            font-size: 11.5px !important;
+            color: #fecb00 !important;
+            text-transform: uppercase !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 12px !important;
+        }
+        .rover-speech-bubble {
+            background: rgba(14, 23, 36, 0.75);
+            border-left: 3px solid #fecb00;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 14px;
+            font-style: italic;
+        }
+        .rover-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #070b10;
+            border: 1px solid #1e334d;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .rover-status-dot-active {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+        .rover-status-dot-warn {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+        }
+
+        /* 3 Compact Overview Blocks (Requirement 7) */
+        .rover-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            text-align: left;
+        }
+        .rover-feature-tile {
+            background: #0e1724;
+            border: 1px solid #1e334d;
+            border-left: 3px solid #fecb00;
+            border-radius: 8px;
+            padding: 9px 12px;
+        }
+        .rover-feature-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fecb00;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rover-feature-text {
+            font-size: 11.5px;
+            color: #94a3b8;
+            margin: 2px 0 0 0;
+            line-height: 1.4;
+        }
+
+        /* Chat Column (Right) */
+        .rover-chat-wrapper {
+            background: #101c2b;
+            border: 1px solid #1e334d;
+            border-top: 3.5px solid #fecb00;
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 14px;
+        }
+        .chat-top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #1e334d;
+        }
+        .chat-top-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-history-scroll {
+            max-height: 390px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-history-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-history-scroll::-webkit-scrollbar-thumb {
+            background: #1e334d;
+            border-radius: 3px;
+        }
+        .chat-bubble {
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+        .chat-bubble-rover {
+            background: #142236;
+            border: 1px solid #1e334d;
+            border-left: 3.5px solid #fecb00;
+            color: #e2e8f0;
+            align-self: flex-start;
+            max-width: 95%;
+        }
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #1e3a5f 0%, #254b7d 100%);
+            border: 1px solid #3b82f6;
+            color: #ffffff;
+            align-self: flex-end;
+            max-width: 90%;
+        }
+        .bubble-speaker-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chat-bubble-rover .bubble-speaker-tag { color: #fecb00; }
+        .chat-bubble-user .bubble-speaker-tag { color: #60a5fa; justify-content: flex-end; }
     </style>
     """
 else:
@@ -556,6 +807,254 @@ else:
             align-items: center;
             justify-content: space-between;
         }
+        /* =====================================================================
+           ROVER AI INFRASTRUCTURE ASSISTANT (DAY THEME)
+           ===================================================================== */
+        .rover-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #edf2f7 100%);
+            border: 2px solid #d99b00;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin: 20px 0 28px 0;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+        .rover-header-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed rgba(217, 155, 0, 0.4);
+            padding-bottom: 14px;
+        }
+        .rover-header-title {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            color: #b45309 !important;
+            margin: 0 0 4px 0 !important;
+            letter-spacing: 1px !important;
+        }
+        .rover-header-sub {
+            font-size: 14.5px !important;
+            color: #475569 !important;
+            margin: 0 !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Mascot Column (Left) */
+        .rover-mascot-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 3.5px solid #d99b00;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+        }
+        .mascot-avatar-wrapper {
+            position: relative;
+            width: 175px;
+            height: 175px;
+            margin: 0 auto 14px auto;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, #d99b00 0%, #94a3b8 50%, #10b981 100%);
+            animation: roverFloatAnim 4s ease-in-out infinite;
+        }
+        .mascot-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f1f5f9;
+            border: 2px solid #ffffff;
+            display: block;
+        }
+        .mascot-radar-pulse {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(217, 155, 0, 0.45);
+            animation: roverPulseAnim 2.6s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+            pointer-events: none;
+        }
+        @keyframes roverFloatAnim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+        }
+        @keyframes roverPulseAnim {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.18); opacity: 0; }
+        }
+        .rover-identity-name {
+            font-family: 'Oswald', sans-serif !important;
+            font-size: 26px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin: 0 0 2px 0 !important;
+            letter-spacing: 1px !important;
+        }
+        .rover-identity-sub {
+            font-size: 11.5px !important;
+            color: #b45309 !important;
+            text-transform: uppercase !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 12px !important;
+        }
+        .rover-speech-bubble {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid #d99b00;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 14px;
+            font-style: italic;
+        }
+        .rover-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 12px;
+        }
+        .rover-status-dot-active {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 6px #10b981;
+        }
+        .rover-status-dot-warn {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 6px #f59e0b;
+        }
+
+        /* 3 Compact Overview Blocks (Requirement 7) */
+        .rover-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            text-align: left;
+        }
+        .rover-feature-tile {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 3px solid #d99b00;
+            border-radius: 8px;
+            padding: 9px 12px;
+        }
+        .rover-feature-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #b45309;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rover-feature-text {
+            font-size: 11.5px;
+            color: #475569;
+            margin: 2px 0 0 0;
+            line-height: 1.4;
+        }
+
+        /* Chat Column (Right) */
+        .rover-chat-wrapper {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 3.5px solid #d99b00;
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 14px;
+        }
+        .chat-top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .chat-top-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-history-scroll {
+            max-height: 390px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-history-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-history-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .chat-bubble {
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+        .chat-bubble-rover {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 3.5px solid #d99b00;
+            color: #0f172a;
+            align-self: flex-start;
+            max-width: 95%;
+        }
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: 1px solid #1d4ed8;
+            color: #ffffff;
+            align-self: flex-end;
+            max-width: 90%;
+        }
+        .bubble-speaker-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chat-bubble-rover .bubble-speaker-tag { color: #b45309; }
+        .chat-bubble-user .bubble-speaker-tag { color: #dbeafe; justify-content: flex-end; }
     </style>
     """
 
@@ -812,9 +1311,11 @@ if current_page == "home":
         kpi_c3.metric("Avg. Remaining Useful Life", f"{avg_rul:.1f} yrs", "Temporal Health")
         kpi_c4.metric("Critical Triage Assets", f"{high_risk_count:,}", "Immediate Priority")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # 3. ROVER AI Infrastructure Assistant Section (Visual Mascot + Interactive LLM Chatbot)
+    from app.ai.rover_component import render_rover_section
+    render_rover_section(is_night=is_night)
 
-    # 3. Heading for Clickable Cards Grid
+    # 4. Heading for Clickable Cards Grid
     st.markdown("## 🛠️ Explore Predictive Maintenance Tools")
     st.markdown("Select any analytical card below to launch the corresponding AI diagnostic workflow directly on the dashboard:")
 

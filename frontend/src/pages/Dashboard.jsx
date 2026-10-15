@@ -5,6 +5,7 @@ import InfrastructureTable from '../components/InfrastructureTable.jsx';
 import Loading from '../components/Loading.jsx';
 import StatCard from '../components/StatCard.jsx';
 import RoadInfrastructureHero from '../components/RoadInfrastructureHero.jsx';
+import RoverChatAssistant from '../components/RoverChatAssistant.jsx';
 import ProjectOverviewCard from '../components/ProjectOverviewCard.jsx';
 import ProgressPerformanceCard from '../components/ProgressPerformanceCard.jsx';
 import InfrastructureTypeChart from '../components/charts/InfrastructureTypeChart.jsx';
@@ -45,6 +46,9 @@ export default function Dashboard() {
     <div className="page-stack">
       {/* 1. Road Infrastructure Project Hero Banner (Image 1) */}
       <RoadInfrastructureHero />
+
+      {/* ROVER AI Infrastructure Assistant Section */}
+      <RoverChatAssistant />
 
       {/* Operational Alerts Strip */}
       {data.alerts?.length > 0 && (
