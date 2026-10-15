@@ -3146,12 +3146,107 @@ a {
   font-weight: 700;
 }
 
+.search-submit-btn {
+  background: var(--highway-yellow);
+  color: #0b131e;
+  border: none;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 28px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.search-submit-btn:hover {
+  background: #ffd633;
+}
+
+.map-controls-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #0d1520;
+  border: 1px solid var(--road-border);
+  border-radius: 8px;
+}
+
+.map-type-toggles {
+  display: flex;
+  gap: 6px;
+}
+
+.map-tool-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--road-border);
+  color: #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.map-tool-btn:hover {
+  background: rgba(254, 203, 0, 0.15);
+  border-color: var(--highway-yellow);
+  color: var(--highway-yellow);
+}
+
+.map-tool-btn.active {
+  background: var(--highway-yellow);
+  color: #0b131e;
+  border-color: var(--highway-yellow);
+  font-weight: 700;
+}
+
+.map-zoom-toggles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zoom-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.zoom-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #142030;
+  border: 1px solid var(--road-border);
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.zoom-btn:hover {
+  background: var(--highway-yellow);
+  color: #0b131e;
+  border-color: var(--highway-yellow);
+}
+
 .google-map-embed-frame {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--road-border);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  min-height: 380px;
+  background: #0b131e;
 }
 
 .google-map-canvas {
@@ -3163,15 +3258,17 @@ a {
   bottom: 10px;
   left: 10px;
   right: 10px;
-  background: rgba(11, 19, 30, 0.85);
+  background: rgba(11, 19, 30, 0.88);
   backdrop-filter: blur(4px);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 10.5px;
   color: var(--highway-yellow);
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border: 1px solid rgba(254, 203, 0, 0.3);
-  pointer-events: none;
+  z-index: 5;
 }
 
 /* Fallback Indian Corridor Map */

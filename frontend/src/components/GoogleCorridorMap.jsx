@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 // Curated Major Indian Corridors & Landmarks for instant selection and testing
-const FALLBACK_CORRIDORS = [
+const POPULAR_INDIAN_CORRIDORS = [
   {
     name: 'Bandra-Worli Sea Link',
     city: 'Mumbai',
@@ -94,6 +94,34 @@ const FALLBACK_CORRIDORS = [
   },
 ];
 
+// Dictionary of standard Indian city coordinates for instant local geocoding
+const INDIAN_CITIES_COORDS = {
+  pune: { lat: 18.5204, lng: 73.8567, state: 'Maharashtra', city: 'Pune' },
+  mumbai: { lat: 19.076, lng: 72.8777, state: 'Maharashtra', city: 'Mumbai' },
+  nagpur: { lat: 21.1458, lng: 79.0882, state: 'Maharashtra', city: 'Nagpur' },
+  nashik: { lat: 19.9975, lng: 73.7898, state: 'Maharashtra', city: 'Nashik' },
+  bengaluru: { lat: 12.9716, lng: 77.5946, state: 'Karnataka', city: 'Bengaluru' },
+  bangalore: { lat: 12.9716, lng: 77.5946, state: 'Karnataka', city: 'Bengaluru' },
+  hyderabad: { lat: 17.385, lng: 78.4867, state: 'Telangana', city: 'Hyderabad' },
+  delhi: { lat: 28.6139, lng: 77.209, state: 'Delhi', city: 'New Delhi' },
+  'new delhi': { lat: 28.6139, lng: 77.209, state: 'Delhi', city: 'New Delhi' },
+  chennai: { lat: 13.0827, lng: 80.2707, state: 'Tamil Nadu', city: 'Chennai' },
+  ahmedabad: { lat: 23.0225, lng: 72.5714, state: 'Gujarat', city: 'Ahmedabad' },
+  kolkata: { lat: 22.5726, lng: 88.3639, state: 'West Bengal', city: 'Kolkata' },
+  jaipur: { lat: 26.9124, lng: 75.7873, state: 'Rajasthan', city: 'Jaipur' },
+  lucknow: { lat: 26.8467, lng: 80.9462, state: 'Uttar Pradesh', city: 'Lucknow' },
+  chandigarh: { lat: 30.7333, lng: 76.7794, state: 'Punjab', city: 'Chandigarh' },
+  thane: { lat: 19.2183, lng: 72.9781, state: 'Maharashtra', city: 'Thane' },
+  'navi mumbai': { lat: 19.033, lng: 73.0297, state: 'Maharashtra', city: 'Navi Mumbai' },
+  surat: { lat: 21.1702, lng: 72.8311, state: 'Gujarat', city: 'Surat' },
+  indore: { lat: 22.7196, lng: 75.8577, state: 'Madhya Pradesh', city: 'Indore' },
+  bhopal: { lat: 23.2599, lng: 77.4126, state: 'Madhya Pradesh', city: 'Bhopal' },
+  kochi: { lat: 9.9312, lng: 76.2673, state: 'Kerala', city: 'Kochi' },
+  coimbatore: { lat: 11.0168, lng: 76.9558, state: 'Tamil Nadu', city: 'Coimbatore' },
+  visakhapatnam: { lat: 17.6868, lng: 83.2185, state: 'Andhra Pradesh', city: 'Visakhapatnam' },
+  patna: { lat: 25.5941, lng: 85.1376, state: 'Bihar', city: 'Patna' },
+};
+
 export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }) {
   const mapContainerRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -111,6 +139,11 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
   );
   const [isConfirmed, setIsConfirmed] = useState(true);
 
+  // Google Maps View controls
+  const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite, 'p' = Terrain
+  const [zoomLevel, setZoomLevel] = useState(15);
+  const [useJsApi, setUseJsApi] = useState(Boolean(apiKey));
+
   // Sync state if selectedLocation prop changes from parent
   useEffect(() => {
     if (selectedLocation) {
@@ -123,7 +156,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
   // Load Google Maps API script if API key is provided
   useEffect(() => {
     if (!apiKey) {
-      setLoadError(false); // Clean fallback mode
+      setLoadError(false);
       return;
     }
 
@@ -132,7 +165,6 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       return;
     }
 
-    // Check if script is already added
     const existingScript = document.getElementById('google-maps-script');
     if (!existingScript) {
       const script = document.createElement('script');
@@ -142,7 +174,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       script.defer = true;
       script.onload = () => setMapsLoaded(true);
       script.onerror = () => {
-        console.warn('Google Maps script failed to load. Falling back to regional corridor selector.');
+        console.warn('Google Maps script failed to load. Falling back to Google Maps Embed viewer.');
         setLoadError(true);
       };
       document.head.appendChild(script);
@@ -154,18 +186,18 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
 
   // Initialize interactive Google Map once script is loaded
   useEffect(() => {
-    if (!mapsLoaded || !mapContainerRef.current || !window.google || !window.google.maps) return;
+    if (!mapsLoaded || !mapContainerRef.current || !window.google || !window.google.maps || !useJsApi) return;
 
     try {
       const defaultCenter = {
-        lat: selectedLocation?.latitude || 18.756,
-        lng: selectedLocation?.longitude || 73.4116,
+        lat: parseFloat(customLat) || 18.756,
+        lng: parseFloat(customLng) || 73.4116,
       };
 
       const map = new window.google.maps.Map(mapContainerRef.current, {
         center: defaultCenter,
-        zoom: 14,
-        mapTypeId: 'roadmap',
+        zoom: zoomLevel,
+        mapTypeId: mapType === 'k' ? 'satellite' : mapType === 'p' ? 'terrain' : 'roadmap',
         mapTypeControl: true,
         streetViewControl: true,
         fullscreenControl: true,
@@ -183,20 +215,17 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       });
       mapInstanceRef.current = map;
 
-      // Marker
       const marker = new window.google.maps.Marker({
         position: defaultCenter,
         map,
-        title: selectedLocation?.address || 'Selected Infrastructure Location',
+        title: customAddress || 'Selected Infrastructure Location',
         animation: window.google.maps.Animation.DROP,
         draggable: true,
       });
       markerInstanceRef.current = marker;
 
-      // Geocoder
       const geocoder = new window.google.maps.Geocoder();
 
-      // Reverse geocode helper
       const updateFromLatLng = (lat, lng) => {
         geocoder.geocode({ location: { lat, lng } }, (results, status) => {
           let addr = `Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}, India`;
@@ -232,7 +261,6 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         });
       };
 
-      // Map click listener -> places marker & reverse geocodes
       map.addListener('click', (e) => {
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
@@ -240,14 +268,12 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         updateFromLatLng(lat, lng);
       });
 
-      // Marker drag listener
       marker.addListener('dragend', (e) => {
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
         updateFromLatLng(lat, lng);
       });
 
-      // Places Autocomplete
       if (searchInputRef.current && window.google.maps.places) {
         const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current, {
           componentRestrictions: { country: 'in' },
@@ -297,7 +323,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       console.error('Google Maps initialization error:', err);
       setLoadError(true);
     }
-  }, [mapsLoaded]);
+  }, [mapsLoaded, useJsApi]);
 
   // Handle Preset Selection
   const handleSelectPreset = (corridor) => {
@@ -306,10 +332,10 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
     setCustomLng(corridor.longitude);
     setIsConfirmed(true);
 
-    if (mapInstanceRef.current && markerInstanceRef.current && window.google) {
+    if (mapInstanceRef.current && markerInstanceRef.current && window.google && useJsApi) {
       const pos = { lat: corridor.latitude, lng: corridor.longitude };
       mapInstanceRef.current.setCenter(pos);
-      mapInstanceRef.current.setZoom(15);
+      mapInstanceRef.current.setZoom(zoomLevel);
       markerInstanceRef.current.setPosition(pos);
     }
 
@@ -321,6 +347,79 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       state: corridor.state,
       name: corridor.name,
       type: corridor.type,
+    });
+  };
+
+  // Handle location search by query text (works with or without Places API)
+  const handlePerformSearch = (e) => {
+    if (e) e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    const queryLower = query.toLowerCase();
+
+    // 1. Check if user typed coordinates like "18.756, 73.4116"
+    const coordMatch = query.match(/^([-+]?\d{1,2}(?:\.\d+)?)\s*,\s*([-+]?\d{1,3}(?:\.\d+)?)$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      const addr = `Custom Coordinates: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E, India`;
+      setCustomLat(lat);
+      setCustomLng(lng);
+      setCustomAddress(addr);
+      setIsConfirmed(true);
+      onLocationSelect({
+        address: addr,
+        latitude: lat,
+        longitude: lng,
+        city: 'Pune',
+        state: 'Maharashtra',
+      });
+      return;
+    }
+
+    // 2. Check if matched against popular Indian corridors
+    const matchedCorridor = POPULAR_INDIAN_CORRIDORS.find(
+      (c) =>
+        c.name.toLowerCase().includes(queryLower) ||
+        c.city.toLowerCase().includes(queryLower) ||
+        c.address.toLowerCase().includes(queryLower)
+    );
+
+    if (matchedCorridor) {
+      handleSelectPreset(matchedCorridor);
+      return;
+    }
+
+    // 3. Check if matched against known Indian cities
+    for (const [cityName, info] of Object.entries(INDIAN_CITIES_COORDS)) {
+      if (queryLower.includes(cityName)) {
+        const addr = `${query}, ${info.city}, ${info.state}, India`;
+        setCustomLat(info.lat);
+        setCustomLng(info.lng);
+        setCustomAddress(addr);
+        setIsConfirmed(true);
+        onLocationSelect({
+          address: addr,
+          latitude: info.lat,
+          longitude: info.lng,
+          city: info.city,
+          state: info.state,
+        });
+        return;
+      }
+    }
+
+    // 4. Default: Treat as Indian address
+    const fullAddr = query.toLowerCase().includes('india') ? query : `${query}, India`;
+    setCustomAddress(fullAddr);
+    setIsConfirmed(true);
+    onLocationSelect({
+      address: fullAddr,
+      latitude: customLat,
+      longitude: customLng,
+      city: 'Pune',
+      state: 'Maharashtra',
     });
   };
 
@@ -336,7 +435,15 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
     });
   };
 
-  const isLiveGoogleMaps = apiKey && mapsLoaded && !loadError;
+  const isLiveJsMapsActive = apiKey && mapsLoaded && !loadError && useJsApi;
+
+  // Compute live Google Maps Embed URL
+  const encodedQuery = encodeURIComponent(
+    customAddress && customAddress.length > 5
+      ? customAddress
+      : `${parseFloat(customLat).toFixed(4)},${parseFloat(customLng).toFixed(4)}`
+  );
+  const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodedQuery}&t=${mapType}&z=${zoomLevel}&ie=UTF8&iwloc=&output=embed`;
 
   return (
     <div className="google-corridor-map-wrapper">
@@ -347,20 +454,25 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
           <h3>Select Infrastructure on Google Maps</h3>
         </div>
         <div className="map-badge-pill">
-          {isLiveGoogleMaps ? (
-            <span className="live-status-pill green">
-              <span className="pulse-dot" /> Google Maps API Active
-            </span>
+          {apiKey ? (
+            <button
+              type="button"
+              className={`live-status-pill ${isLiveJsMapsActive ? 'green' : 'amber'}`}
+              onClick={() => setUseJsApi(!useJsApi)}
+              title="Click to toggle between Dynamic JS Map and Google Maps Embed"
+            >
+              <span className="pulse-dot" /> {isLiveJsMapsActive ? 'Google Maps JS Active' : 'Google Maps Live Embed'}
+            </button>
           ) : (
-            <span className="live-status-pill amber" title="Add VITE_GOOGLE_MAPS_API_KEY to frontend/.env">
-              📍 Indian Corridor Navigator
+            <span className="live-status-pill green">
+              <span className="pulse-dot" /> Live Google Maps Connected
             </span>
           )}
         </div>
       </div>
 
       {/* Autocomplete / Corridor Search Bar */}
-      <div className="map-search-row">
+      <form className="map-search-row" onSubmit={handlePerformSearch}>
         <div className="search-input-wrap">
           <span className="search-icon">🔍</span>
           <input
@@ -369,25 +481,28 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
             className="map-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Indian city, road, bridge, junction (e.g. Pune, Bandra-Worli, ORR Bengaluru)..."
+            placeholder="Search Indian road, bridge, junction (e.g. Bandra-Worli, Pune, Bengaluru ORR)..."
           />
           {searchQuery && (
             <button type="button" className="clear-search-btn" onClick={() => setSearchQuery('')}>
               ✕
             </button>
           )}
+          <button type="submit" className="search-submit-btn">
+            Locate
+          </button>
         </div>
-      </div>
+      </form>
 
       {/* Quick Indian Preset Corridors */}
       <div className="preset-corridors-row">
         <span className="preset-label">⚡ Fast Corridors:</span>
         <div className="preset-chips-scroll">
-          {FALLBACK_CORRIDORS.slice(0, 5).map((c) => (
+          {POPULAR_INDIAN_CORRIDORS.slice(0, 5).map((c) => (
             <button
               key={c.name}
               type="button"
-              className={`preset-chip ${selectedLocation?.address?.includes(c.city) || customAddress.includes(c.name) ? 'active' : ''}`}
+              className={`preset-chip ${customAddress.includes(c.name) ? 'active' : ''}`}
               onClick={() => handleSelectPreset(c)}
             >
               {c.type === 'Bridge' ? '🌉' : '🛣️'} {c.name} ({c.city})
@@ -396,98 +511,138 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         </div>
       </div>
 
-      {/* Google Maps Display Area */}
-      {isLiveGoogleMaps ? (
-        <div className="google-map-embed-frame">
-          <div ref={mapContainerRef} className="google-map-canvas" style={{ width: '100%', height: '360px' }} />
-          <div className="map-hint-overlay">
-            <span>💡 Click map to place marker · Drag marker to adjust location</span>
-          </div>
+      {/* Map Layer & Zoom Controls Toolbar */}
+      <div className="map-controls-toolbar">
+        <div className="map-type-toggles">
+          <button
+            type="button"
+            className={`map-tool-btn ${mapType === 'm' ? 'active' : ''}`}
+            onClick={() => setMapType('m')}
+            title="Roadmap & Highway Network"
+          >
+            🗺️ Roadmap
+          </button>
+          <button
+            type="button"
+            className={`map-tool-btn ${mapType === 'k' ? 'active' : ''}`}
+            onClick={() => setMapType('k')}
+            title="Satellite Aerial Imagery"
+          >
+            🛰️ Satellite
+          </button>
+          <button
+            type="button"
+            className={`map-tool-btn ${mapType === 'p' ? 'active' : ''}`}
+            onClick={() => setMapType('p')}
+            title="Topographical Terrain"
+          >
+            ⛰️ Terrain
+          </button>
         </div>
-      ) : (
-        /* Graceful Fallback Mode: Clean, fully functioning Indian Corridor visual selector */
-        <div className="fallback-corridor-map-card">
-          <div className="fallback-config-banner">
-            <span className="banner-icon">🗺️</span>
-            <div>
-              <strong>Interactive India Infrastructure Locator Active</strong>
-              <p>
-                Click any major corridor below or enter precise coordinates. To enable Google Maps Satellite & Street
-                View, set <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>frontend/.env</code>.
-              </p>
-            </div>
-          </div>
 
-          {/* Interactive Indian Corridor Node Grid */}
-          <div className="indian-corridor-grid">
-            {FALLBACK_CORRIDORS.map((c) => (
-              <div
-                key={c.name}
-                className={`corridor-node-card ${customAddress.includes(c.name) ? 'selected' : ''}`}
-                onClick={() => handleSelectPreset(c)}
-              >
-                <div className="corridor-card-top">
-                  <span className="node-icon">{c.type === 'Bridge' ? '🌉' : '🛣️'}</span>
-                  <div>
-                    <strong>{c.name}</strong>
-                    <small>{c.city}, {c.state}</small>
-                  </div>
-                </div>
-                <div className="corridor-coords-tag">
-                  {c.latitude.toFixed(4)}°N, {c.longitude.toFixed(4)}°E
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Manual Coordinate / Custom Location Bar */}
-          <div className="manual-coord-row">
-            <div className="coord-field">
-              <label>Address / Landmark</label>
-              <input
-                type="text"
-                value={customAddress}
-                onChange={(e) => {
-                  setCustomAddress(e.target.value);
-                  setIsConfirmed(false);
-                }}
-                placeholder="Enter Indian address or corridor name"
-              />
-            </div>
-            <div className="coord-field small">
-              <label>Latitude</label>
-              <input
-                type="number"
-                step="0.0001"
-                value={customLat}
-                onChange={(e) => {
-                  setCustomLat(e.target.value);
-                  setIsConfirmed(false);
-                }}
-              />
-            </div>
-            <div className="coord-field small">
-              <label>Longitude</label>
-              <input
-                type="number"
-                step="0.0001"
-                value={customLng}
-                onChange={(e) => {
-                  setCustomLng(e.target.value);
-                  setIsConfirmed(false);
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              className={`apply-coord-btn ${isConfirmed ? 'confirmed' : ''}`}
-              onClick={handleManualConfirm}
-            >
-              {isConfirmed ? '✓ Confirmed' : 'Update Location'}
-            </button>
-          </div>
+        <div className="map-zoom-toggles">
+          <span className="zoom-label">Zoom: {zoomLevel}x</span>
+          <button
+            type="button"
+            className="zoom-btn"
+            onClick={() => setZoomLevel((prev) => Math.max(10, prev - 1))}
+            title="Zoom Out"
+          >
+            -
+          </button>
+          <button
+            type="button"
+            className="zoom-btn"
+            onClick={() => setZoomLevel((prev) => Math.min(19, prev + 1))}
+            title="Zoom In"
+          >
+            +
+          </button>
         </div>
-      )}
+      </div>
+
+      {/* VISIBLE GOOGLE MAP DISPLAY CANVAS */}
+      <div className="google-map-embed-frame">
+        {isLiveJsMapsActive ? (
+          <div ref={mapContainerRef} className="google-map-canvas" style={{ width: '100%', height: '380px' }} />
+        ) : (
+          <iframe
+            key={`${encodedQuery}-${mapType}-${zoomLevel}`}
+            title="Google Maps Corridor Live View"
+            width="100%"
+            height="380"
+            style={{
+              border: 0,
+              borderRadius: '10px',
+              display: 'block',
+              backgroundColor: '#0b131e',
+            }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src={googleMapsEmbedUrl}
+          />
+        )}
+
+        <div className="map-hint-overlay">
+          <span>📍 Pin Location: <strong>{customAddress.split(',')[0]}</strong></span>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodedQuery}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mini-maps-link"
+          >
+            Open in Google Maps ↗
+          </a>
+        </div>
+      </div>
+
+      {/* Manual Coordinate / Custom Location Bar */}
+      <div className="manual-coord-row">
+        <div className="coord-field">
+          <label>Address / Landmark</label>
+          <input
+            type="text"
+            value={customAddress}
+            onChange={(e) => {
+              setCustomAddress(e.target.value);
+              setIsConfirmed(false);
+            }}
+            placeholder="Enter Indian address or corridor name"
+          />
+        </div>
+        <div className="coord-field small">
+          <label>Latitude</label>
+          <input
+            type="number"
+            step="0.0001"
+            value={customLat}
+            onChange={(e) => {
+              setCustomLat(e.target.value);
+              setIsConfirmed(false);
+            }}
+          />
+        </div>
+        <div className="coord-field small">
+          <label>Longitude</label>
+          <input
+            type="number"
+            step="0.0001"
+            value={customLng}
+            onChange={(e) => {
+              setCustomLng(e.target.value);
+              setIsConfirmed(false);
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          className={`apply-coord-btn ${isConfirmed ? 'confirmed' : ''}`}
+          onClick={handleManualConfirm}
+        >
+          {isConfirmed ? '✓ Confirmed' : 'Update Pin'}
+        </button>
+      </div>
 
       {/* Selected Location Summary Card */}
       <div className="selected-location-summary panel">
