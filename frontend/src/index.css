@@ -3163,80 +3163,84 @@ a {
   background: #ffd633;
 }
 
-.map-controls-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+/* 3 Distinct Interactive View Modes Selector Bar */
+.three-views-selector-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .three-views-selector-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.view-mode-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: #0d1520;
   border: 1px solid var(--road-border);
   border-radius: 8px;
-}
-
-.map-type-toggles {
-  display: flex;
-  gap: 6px;
-}
-
-.map-tool-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--road-border);
-  color: #cbd5e1;
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 10.5px;
-  font-weight: 600;
+  padding: 8px 10px;
   cursor: pointer;
-  transition: all 0.16s ease;
+  text-align: left;
+  transition: all 0.18s ease;
 }
 
-.map-tool-btn:hover {
-  background: rgba(254, 203, 0, 0.15);
+.view-mode-card:hover {
+  background: #142234;
   border-color: var(--highway-yellow);
-  color: var(--highway-yellow);
+  transform: translateY(-1px);
 }
 
-.map-tool-btn.active {
-  background: var(--highway-yellow);
-  color: #0b131e;
+.view-mode-card.active {
+  background: #17283e;
   border-color: var(--highway-yellow);
-  font-weight: 700;
+  border-left: 3.5px solid var(--highway-yellow);
+  box-shadow: 0 4px 14px rgba(254, 203, 0, 0.12);
 }
 
-.map-zoom-toggles {
+.view-card-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.view-card-info {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
-.zoom-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-family: monospace;
-}
-
-.zoom-btn {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #142030;
-  border: 1px solid var(--road-border);
+.view-card-info strong {
+  font-size: 11px;
   color: #ffffff;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.16s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.zoom-btn:hover {
+.view-card-info small {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.view-active-pill {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 8.5px;
+  font-weight: 800;
   background: var(--highway-yellow);
   color: #0b131e;
-  border-color: var(--highway-yellow);
+  padding: 1px 5px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
 }
 
 .google-map-embed-frame {
@@ -3245,12 +3249,13 @@ a {
   overflow: hidden;
   border: 1px solid var(--road-border);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  min-height: 380px;
+  min-height: 390px;
   background: #0b131e;
 }
 
-.google-map-canvas {
-  border-radius: inherit;
+.google-map-embed-frame .leaflet-container {
+  font-family: inherit;
+  background: #0b131e;
 }
 
 .map-hint-overlay {
@@ -3258,17 +3263,115 @@ a {
   bottom: 10px;
   left: 10px;
   right: 10px;
-  background: rgba(11, 19, 30, 0.88);
-  backdrop-filter: blur(4px);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 10.5px;
-  color: var(--highway-yellow);
+  background: rgba(11, 19, 30, 0.9);
+  backdrop-filter: blur(6px);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(254, 203, 0, 0.3);
-  z-index: 5;
+  border: 1px solid rgba(254, 203, 0, 0.35);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.map-hint-overlay strong {
+  color: var(--highway-yellow);
+}
+
+.layer-mode-badge {
+  background: rgba(254, 203, 0, 0.15);
+  border: 1px solid var(--highway-yellow);
+  color: var(--highway-yellow);
+  font-weight: 700;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Surroundings & Google Maps Actions Bar */
+.surroundings-actions-bar {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .surroundings-actions-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.surroundings-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.16s ease;
+}
+
+.surroundings-action-btn.street-view {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid #10b981;
+  color: #34d399;
+}
+
+.surroundings-action-btn.street-view:hover {
+  background: #10b981;
+  color: #0b131e;
+  transform: translateY(-1px);
+}
+
+.surroundings-action-btn.maps-link {
+  background: rgba(254, 203, 0, 0.1);
+  border: 1px solid var(--highway-yellow);
+  color: var(--highway-yellow);
+}
+
+.surroundings-action-btn.maps-link:hover {
+  background: var(--highway-yellow);
+  color: #0b131e;
+  transform: translateY(-1px);
+}
+
+/* Pin Pulse Animation */
+@keyframes pinPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Light Mode Overrides for 3 Views */
+[data-theme="light"] .view-mode-card {
+  background: #f8fafc;
+  border-color: var(--road-border);
+}
+
+[data-theme="light"] .view-mode-card.active {
+  background: #ffffff;
+  border-color: var(--highway-yellow);
+}
+
+[data-theme="light"] .view-card-info strong {
+  color: var(--text-primary);
 }
 
 /* Fallback Indian Corridor Map */

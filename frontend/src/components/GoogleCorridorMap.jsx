@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Curated Major Indian Corridors & Landmarks for instant selection and testing
 const POPULAR_INDIAN_CORRIDORS = [
@@ -122,27 +124,42 @@ const INDIAN_CITIES_COORDS = {
   patna: { lat: 25.5941, lng: 85.1376, state: 'Bihar', city: 'Patna' },
 };
 
-export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }) {
-  const mapContainerRef = useRef(null);
-  const searchInputRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markerInstanceRef = useRef(null);
+// Custom Pulsing Highway Marker Icon for Leaflet
+const createHighwayPinIcon = () =>
+  L.divIcon({
+    className: 'custom-highway-pin',
+    html: `
+      <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(254, 203, 0, 0.4); animation: pinPulse 2s infinite ease-out;"></div>
+        <div style="position: absolute; width: 28px; height: 28px; border-radius: 50%; background: #0b131e; border: 2.5px solid #fecb00; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-size: 14px;">
+          📍
+        </div>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -20],
+  });
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-  const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }) {
+  const mapElementRef = useRef(null);
+  const leafletMapRef = useRef(null);
+  const markerRef = useRef(null);
+  const baseLayersRef = useRef({});
+
   const [customLat, setCustomLat] = useState(selectedLocation?.latitude || 18.756);
   const [customLng, setCustomLng] = useState(selectedLocation?.longitude || 73.4116);
   const [customAddress, setCustomAddress] = useState(
     selectedLocation?.address || 'Mumbai - Pune Expressway, Maharashtra, India'
   );
+  const [searchQuery, setSearchQuery] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(true);
 
-  // Google Maps View controls
-  const [mapType, setMapType] = useState('m'); // 'm' = Roadmap, 'k' = Satellite, 'p' = Terrain
-  const [zoomLevel, setZoomLevel] = useState(15);
-  const [useJsApi, setUseJsApi] = useState(Boolean(apiKey));
+  // 3 Primary View Modes:
+  // 1. 'satellite' -> Real Photorealistic Satellite Imagery & Surroundings
+  // 2. 'road'      -> Clear Road, Highway & Corridor Street Network
+  // 3. 'terrain'   -> Topography, Elevation Contours & Physical Landscape
+  const [activeViewMode, setActiveViewMode] = useState('satellite');
 
   // Sync state if selectedLocation prop changes from parent
   useEffect(() => {
@@ -153,191 +170,201 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
     }
   }, [selectedLocation]);
 
-  // Load Google Maps API script if API key is provided
-  useEffect(() => {
-    if (!apiKey) {
-      setLoadError(false);
-      return;
-    }
-
-    if (window.google && window.google.maps) {
-      setMapsLoaded(true);
-      return;
-    }
-
-    const existingScript = document.getElementById('google-maps-script');
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setMapsLoaded(true);
-      script.onerror = () => {
-        console.warn('Google Maps script failed to load. Falling back to Google Maps Embed viewer.');
-        setLoadError(true);
-      };
-      document.head.appendChild(script);
-    } else {
-      existingScript.addEventListener('load', () => setMapsLoaded(true));
-      existingScript.addEventListener('error', () => setLoadError(true));
-    }
-  }, [apiKey]);
-
-  // Initialize interactive Google Map once script is loaded
-  useEffect(() => {
-    if (!mapsLoaded || !mapContainerRef.current || !window.google || !window.google.maps || !useJsApi) return;
-
+  // Reverse Geocoding helper using OpenStreetMap Nominatim
+  const reverseGeocode = async (lat, lng) => {
     try {
-      const defaultCenter = {
-        lat: parseFloat(customLat) || 18.756,
-        lng: parseFloat(customLng) || 73.4116,
-      };
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        const addr = data.display_name || `Location at ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E, India`;
+        const city =
+          data.address?.city ||
+          data.address?.town ||
+          data.address?.suburb ||
+          data.address?.county ||
+          'Pune';
+        const state = data.address?.state || 'Maharashtra';
+        const postal = data.address?.postcode || '';
 
-      const map = new window.google.maps.Map(mapContainerRef.current, {
-        center: defaultCenter,
-        zoom: zoomLevel,
-        mapTypeId: mapType === 'k' ? 'satellite' : mapType === 'p' ? 'terrain' : 'roadmap',
-        mapTypeControl: true,
-        streetViewControl: true,
-        fullscreenControl: true,
-        zoomControl: true,
-        styles: [
-          { elementType: 'geometry', stylers: [{ color: '#162230' }] },
-          { elementType: 'labels.text.stroke', stylers: [{ color: '#162230' }] },
-          { elementType: 'labels.text.fill', stylers: [{ color: '#cbd5e1' }] },
-          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#25374e' }] },
-          { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a2737' }] },
-          { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#fecb00' }] },
-          { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#d99b00' }] },
-          { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#09111c' }] },
-        ],
-      });
-      mapInstanceRef.current = map;
+        const locObj = {
+          address: addr,
+          latitude: lat,
+          longitude: lng,
+          city,
+          state,
+          postal_code: postal,
+          place_id: data.place_id,
+        };
 
-      const marker = new window.google.maps.Marker({
-        position: defaultCenter,
-        map,
-        title: customAddress || 'Selected Infrastructure Location',
-        animation: window.google.maps.Animation.DROP,
-        draggable: true,
-      });
-      markerInstanceRef.current = marker;
-
-      const geocoder = new window.google.maps.Geocoder();
-
-      const updateFromLatLng = (lat, lng) => {
-        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-          let addr = `Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}, India`;
-          let city = 'Pune';
-          let state = 'Maharashtra';
-          let postal = '';
-          let placeId = null;
-
-          if (status === 'OK' && results && results[0]) {
-            addr = results[0].formatted_address;
-            placeId = results[0].place_id;
-            for (const comp of results[0].address_components) {
-              if (comp.types.includes('locality')) city = comp.long_name;
-              if (comp.types.includes('administrative_area_level_1')) state = comp.long_name;
-              if (comp.types.includes('postal_code')) postal = comp.long_name;
-            }
-          }
-
-          const locObj = {
-            address: addr,
-            latitude: lat,
-            longitude: lng,
-            city,
-            state,
-            postal_code: postal,
-            place_id: placeId,
-          };
-          setCustomAddress(addr);
-          setCustomLat(lat);
-          setCustomLng(lng);
-          setIsConfirmed(true);
-          onLocationSelect(locObj);
-        });
-      };
-
-      map.addListener('click', (e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        marker.setPosition(e.latLng);
-        updateFromLatLng(lat, lng);
-      });
-
-      marker.addListener('dragend', (e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        updateFromLatLng(lat, lng);
-      });
-
-      if (searchInputRef.current && window.google.maps.places) {
-        const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current, {
-          componentRestrictions: { country: 'in' },
-          fields: ['formatted_address', 'geometry', 'name', 'place_id', 'address_components'],
-        });
-
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) return;
-
-          map.setCenter(place.geometry.location);
-          map.setZoom(16);
-          marker.setPosition(place.geometry.location);
-
-          const lat = place.geometry.location.lat();
-          const lng = place.geometry.location.lng();
-          let city = 'Pune';
-          let state = 'Maharashtra';
-          let postal = '';
-
-          if (place.address_components) {
-            for (const comp of place.address_components) {
-              if (comp.types.includes('locality')) city = comp.long_name;
-              if (comp.types.includes('administrative_area_level_1')) state = comp.long_name;
-              if (comp.types.includes('postal_code')) postal = comp.long_name;
-            }
-          }
-
-          const locObj = {
-            address: place.formatted_address || place.name,
-            latitude: lat,
-            longitude: lng,
-            city,
-            state,
-            postal_code: postal,
-            place_id: place.place_id,
-          };
-
-          setCustomAddress(locObj.address);
-          setCustomLat(lat);
-          setCustomLng(lng);
-          setIsConfirmed(true);
-          onLocationSelect(locObj);
-        });
+        setCustomAddress(addr);
+        setCustomLat(lat);
+        setCustomLng(lng);
+        setIsConfirmed(true);
+        onLocationSelect(locObj);
+        return locObj;
       }
     } catch (err) {
-      console.error('Google Maps initialization error:', err);
-      setLoadError(true);
+      console.warn('Reverse geocoding error:', err);
     }
-  }, [mapsLoaded, useJsApi]);
 
-  // Handle Preset Selection
-  const handleSelectPreset = (corridor) => {
-    setCustomAddress(corridor.address);
-    setCustomLat(corridor.latitude);
-    setCustomLng(corridor.longitude);
+    // Fallback if network offline
+    const fallbackAddr = `Coordinates: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E, Maharashtra, India`;
+    setCustomAddress(fallbackAddr);
+    setCustomLat(lat);
+    setCustomLng(lng);
+    setIsConfirmed(true);
+    onLocationSelect({
+      address: fallbackAddr,
+      latitude: lat,
+      longitude: lng,
+      city: 'Pune',
+      state: 'Maharashtra',
+    });
+  };
+
+  // Initialize Leaflet Map with the 3 Distinct High-Quality View Layers
+  useEffect(() => {
+    if (!mapElementRef.current || leafletMapRef.current) return;
+
+    const initialLat = parseFloat(customLat) || 18.756;
+    const initialLng = parseFloat(customLng) || 73.4116;
+
+    // 1. Satellite View Layer: Ultra-High Resolution Esri World Imagery (Surroundings, Trees, Buildings, Water)
+    const satelliteLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19,
+      }
+    );
+
+    // Overlay for Satellite View: Highway & City Labels
+    const labelsOverlay = L.tileLayer(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 19,
+        opacity: 0.9,
+      }
+    );
+
+    // Combined Satellite Group (Satellite + Road Labels)
+    const satelliteGroup = L.layerGroup([satelliteLayer, labelsOverlay]);
+
+    // 2. Road Network View Layer: High-Contrast OpenStreetMap Civil Roads & Corridors
+    const roadLayer = L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }
+    );
+
+    // 3. Topography & Terrain View Layer: Physical Elevation, Hills, Contours & Drainage
+    const terrainLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+        maxZoom: 19,
+      }
+    );
+
+    baseLayersRef.current = {
+      satellite: satelliteGroup,
+      road: roadLayer,
+      terrain: terrainLayer,
+    };
+
+    // Instantiate map with default Satellite Surroundings view
+    const map = L.map(mapElementRef.current, {
+      center: [initialLat, initialLng],
+      zoom: 15,
+      layers: [satelliteGroup],
+      zoomControl: false,
+    });
+    leafletMapRef.current = map;
+
+    // Zoom control at bottom right
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Add Pulsing Pin Marker at initial location
+    const marker = L.marker([initialLat, initialLng], {
+      icon: createHighwayPinIcon(),
+      draggable: true,
+    }).addTo(map);
+    markerRef.current = marker;
+
+    marker.bindPopup(
+      `<div style="font-family: inherit; font-size: 12px; color: #0b131e;">
+        <strong>Selected Civil Asset</strong><br/>
+        ${customAddress.split(',')[0]}
+      </div>`
+    );
+
+    // Click map to reposition marker and reverse-geocode
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+      marker.openPopup();
+      reverseGeocode(lat, lng);
+    });
+
+    // Marker drag end
+    marker.on('dragend', (e) => {
+      const { lat, lng } = e.target.getLatLng();
+      reverseGeocode(lat, lng);
+    });
+
+    return () => {
+      map.remove();
+      leafletMapRef.current = null;
+    };
+  }, []);
+
+  // Switch between the 3 View Types
+  const handleSwitchView = (mode) => {
+    setActiveViewMode(mode);
+    const map = leafletMapRef.current;
+    if (!map || !baseLayersRef.current) return;
+
+    // Remove existing layers
+    Object.values(baseLayersRef.current).forEach((layer) => {
+      if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
+      }
+    });
+
+    // Add selected layer
+    const selectedLayer = baseLayersRef.current[mode];
+    if (selectedLayer) {
+      map.addLayer(selectedLayer);
+    }
+  };
+
+  // Fly to location helper
+  const flyToCoords = (lat, lng, address) => {
+    setCustomLat(lat);
+    setCustomLng(lng);
+    if (address) setCustomAddress(address);
     setIsConfirmed(true);
 
-    if (mapInstanceRef.current && markerInstanceRef.current && window.google && useJsApi) {
-      const pos = { lat: corridor.latitude, lng: corridor.longitude };
-      mapInstanceRef.current.setCenter(pos);
-      mapInstanceRef.current.setZoom(zoomLevel);
-      markerInstanceRef.current.setPosition(pos);
+    if (leafletMapRef.current && markerRef.current) {
+      leafletMapRef.current.flyTo([lat, lng], 16, { duration: 1.2 });
+      markerRef.current.setLatLng([lat, lng]);
+      markerRef.current.setPopupContent(
+        `<div style="font-family: inherit; font-size: 12px; color: #0b131e;">
+          <strong>${address ? address.split(',')[0] : 'Selected Infrastructure'}</strong><br/>
+          ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E
+        </div>`
+      );
     }
+  };
+
+  // Handle Preset Corridor Click
+  const handleSelectPreset = (corridor) => {
+    flyToCoords(corridor.latitude, corridor.longitude, corridor.address);
 
     onLocationSelect({
       address: corridor.address,
@@ -350,7 +377,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
     });
   };
 
-  // Handle location search by query text (works with or without Places API)
+  // Handle Search Input Submit
   const handlePerformSearch = (e) => {
     if (e) e.preventDefault();
     const query = searchQuery.trim();
@@ -358,16 +385,13 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
 
     const queryLower = query.toLowerCase();
 
-    // 1. Check if user typed coordinates like "18.756, 73.4116"
+    // 1. Check if user typed numeric coordinates: "18.756, 73.4116"
     const coordMatch = query.match(/^([-+]?\d{1,2}(?:\.\d+)?)\s*,\s*([-+]?\d{1,3}(?:\.\d+)?)$/);
     if (coordMatch) {
       const lat = parseFloat(coordMatch[1]);
       const lng = parseFloat(coordMatch[2]);
       const addr = `Custom Coordinates: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E, India`;
-      setCustomLat(lat);
-      setCustomLng(lng);
-      setCustomAddress(addr);
-      setIsConfirmed(true);
+      flyToCoords(lat, lng, addr);
       onLocationSelect({
         address: addr,
         latitude: lat,
@@ -378,7 +402,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       return;
     }
 
-    // 2. Check if matched against popular Indian corridors
+    // 2. Check if query matches popular corridor presets
     const matchedCorridor = POPULAR_INDIAN_CORRIDORS.find(
       (c) =>
         c.name.toLowerCase().includes(queryLower) ||
@@ -391,14 +415,11 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       return;
     }
 
-    // 3. Check if matched against known Indian cities
+    // 3. Check if query matches known Indian city coordinates
     for (const [cityName, info] of Object.entries(INDIAN_CITIES_COORDS)) {
       if (queryLower.includes(cityName)) {
         const addr = `${query}, ${info.city}, ${info.state}, India`;
-        setCustomLat(info.lat);
-        setCustomLng(info.lng);
-        setCustomAddress(addr);
-        setIsConfirmed(true);
+        flyToCoords(info.lat, info.lng, addr);
         onLocationSelect({
           address: addr,
           latitude: info.lat,
@@ -410,64 +431,66 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
       }
     }
 
-    // 4. Default: Treat as Indian address
-    const fullAddr = query.toLowerCase().includes('india') ? query : `${query}, India`;
-    setCustomAddress(fullAddr);
-    setIsConfirmed(true);
-    onLocationSelect({
-      address: fullAddr,
-      latitude: customLat,
-      longitude: customLng,
-      city: 'Pune',
-      state: 'Maharashtra',
-    });
+    // 4. Default: Query OpenStreetMap Nominatim for Indian places
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        query + ', India'
+      )}&limit=1`,
+      { headers: { 'Accept-Language': 'en' } }
+    )
+      .then((res) => res.json())
+      .then((results) => {
+        if (results && results.length > 0) {
+          const first = results[0];
+          const lat = parseFloat(first.lat);
+          const lng = parseFloat(first.lon);
+          const addr = first.display_name;
+          flyToCoords(lat, lng, addr);
+          onLocationSelect({
+            address: addr,
+            latitude: lat,
+            longitude: lng,
+            city: addr.split(',')[1]?.trim() || 'Pune',
+            state: addr.split(',')[2]?.trim() || 'Maharashtra',
+          });
+        } else {
+          // Fallback
+          const fullAddr = query.toLowerCase().includes('india') ? query : `${query}, India`;
+          setCustomAddress(fullAddr);
+          setIsConfirmed(true);
+        }
+      })
+      .catch((err) => {
+        console.warn('Geocoding search failed:', err);
+      });
   };
 
-  // Manual confirmation of custom coordinates / address
+  // Manual coordinate input apply
   const handleManualConfirm = () => {
-    setIsConfirmed(true);
+    const lat = parseFloat(customLat) || 18.756;
+    const lng = parseFloat(customLng) || 73.4116;
+    flyToCoords(lat, lng, customAddress);
     onLocationSelect({
       address: customAddress,
-      latitude: parseFloat(customLat) || 18.756,
-      longitude: parseFloat(customLng) || 73.4116,
+      latitude: lat,
+      longitude: lng,
       city: customAddress.split(',')[1]?.trim() || 'Pune',
       state: customAddress.split(',')[2]?.trim() || 'Maharashtra',
     });
   };
-
-  const isLiveJsMapsActive = apiKey && mapsLoaded && !loadError && useJsApi;
-
-  // Compute live Google Maps Embed URL
-  const encodedQuery = encodeURIComponent(
-    customAddress && customAddress.length > 5
-      ? customAddress
-      : `${parseFloat(customLat).toFixed(4)},${parseFloat(customLng).toFixed(4)}`
-  );
-  const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodedQuery}&t=${mapType}&z=${zoomLevel}&ie=UTF8&iwloc=&output=embed`;
 
   return (
     <div className="google-corridor-map-wrapper">
       {/* Header & Status Indicator */}
       <div className="map-panel-header">
         <div className="map-header-title">
-          <span className="eyebrow">LOCATION & GIS CORRIDOR</span>
-          <h3>Select Infrastructure on Google Maps</h3>
+          <span className="eyebrow">LOCATION-AWARE GIS CORRIDOR</span>
+          <h3>Explore Infrastructure in 3 Views</h3>
         </div>
         <div className="map-badge-pill">
-          {apiKey ? (
-            <button
-              type="button"
-              className={`live-status-pill ${isLiveJsMapsActive ? 'green' : 'amber'}`}
-              onClick={() => setUseJsApi(!useJsApi)}
-              title="Click to toggle between Dynamic JS Map and Google Maps Embed"
-            >
-              <span className="pulse-dot" /> {isLiveJsMapsActive ? 'Google Maps JS Active' : 'Google Maps Live Embed'}
-            </button>
-          ) : (
-            <span className="live-status-pill green">
-              <span className="pulse-dot" /> Live Google Maps Connected
-            </span>
-          )}
+          <span className="live-status-pill green">
+            <span className="pulse-dot" /> High-Res GIS Aerial Connected
+          </span>
         </div>
       </div>
 
@@ -476,7 +499,6 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         <div className="search-input-wrap">
           <span className="search-icon">🔍</span>
           <input
-            ref={searchInputRef}
             type="text"
             className="map-search-input"
             value={searchQuery}
@@ -511,90 +533,83 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         </div>
       </div>
 
-      {/* Map Layer & Zoom Controls Toolbar */}
-      <div className="map-controls-toolbar">
-        <div className="map-type-toggles">
-          <button
-            type="button"
-            className={`map-tool-btn ${mapType === 'm' ? 'active' : ''}`}
-            onClick={() => setMapType('m')}
-            title="Roadmap & Highway Network"
-          >
-            🗺️ Roadmap
-          </button>
-          <button
-            type="button"
-            className={`map-tool-btn ${mapType === 'k' ? 'active' : ''}`}
-            onClick={() => setMapType('k')}
-            title="Satellite Aerial Imagery"
-          >
-            🛰️ Satellite
-          </button>
-          <button
-            type="button"
-            className={`map-tool-btn ${mapType === 'p' ? 'active' : ''}`}
-            onClick={() => setMapType('p')}
-            title="Topographical Terrain"
-          >
-            ⛰️ Terrain
-          </button>
-        </div>
+      {/* 3 DISTINCT VIEW MODES SELECTOR */}
+      <div className="three-views-selector-bar">
+        <button
+          type="button"
+          className={`view-mode-card ${activeViewMode === 'satellite' ? 'active' : ''}`}
+          onClick={() => handleSwitchView('satellite')}
+        >
+          <span className="view-card-icon">🛰️</span>
+          <div className="view-card-info">
+            <strong>1. Satellite & Surroundings</strong>
+            <small>Photorealistic aerial view of buildings, trees & surroundings</small>
+          </div>
+          {activeViewMode === 'satellite' && <span className="view-active-pill">ACTIVE</span>}
+        </button>
 
-        <div className="map-zoom-toggles">
-          <span className="zoom-label">Zoom: {zoomLevel}x</span>
-          <button
-            type="button"
-            className="zoom-btn"
-            onClick={() => setZoomLevel((prev) => Math.max(10, prev - 1))}
-            title="Zoom Out"
-          >
-            -
-          </button>
-          <button
-            type="button"
-            className="zoom-btn"
-            onClick={() => setZoomLevel((prev) => Math.min(19, prev + 1))}
-            title="Zoom In"
-          >
-            +
-          </button>
+        <button
+          type="button"
+          className={`view-mode-card ${activeViewMode === 'road' ? 'active' : ''}`}
+          onClick={() => handleSwitchView('road')}
+        >
+          <span className="view-card-icon">🛣️</span>
+          <div className="view-card-info">
+            <strong>2. Road & Highway Network</strong>
+            <small>Civil corridor lanes, expressways, street lines & bridges</small>
+          </div>
+          {activeViewMode === 'road' && <span className="view-active-pill">ACTIVE</span>}
+        </button>
+
+        <button
+          type="button"
+          className={`view-mode-card ${activeViewMode === 'terrain' ? 'active' : ''}`}
+          onClick={() => handleSwitchView('terrain')}
+        >
+          <span className="view-card-icon">⛰️</span>
+          <div className="view-card-info">
+            <strong>3. Topography & Terrain</strong>
+            <small>Elevation slope, relief contours & drainage watershed</small>
+          </div>
+          {activeViewMode === 'terrain' && <span className="view-active-pill">ACTIVE</span>}
+        </button>
+      </div>
+
+      {/* INTERACTIVE MAP CANVAS */}
+      <div className="google-map-embed-frame">
+        <div ref={mapElementRef} style={{ width: '100%', height: '390px', borderRadius: '10px' }} />
+
+        {/* View Mode Tag & Hint */}
+        <div className="map-hint-overlay">
+          <span>
+            📍 <strong>{customAddress.split(',')[0]}</strong> &bull; Click anywhere on map to reposition pin
+          </span>
+          <span className="layer-mode-badge">
+            {activeViewMode === 'satellite' ? '🛰️ Satellite Imagery' : activeViewMode === 'road' ? '🛣️ Road Map' : '⛰️ Topography'}
+          </span>
         </div>
       </div>
 
-      {/* VISIBLE GOOGLE MAP DISPLAY CANVAS */}
-      <div className="google-map-embed-frame">
-        {isLiveJsMapsActive ? (
-          <div ref={mapContainerRef} className="google-map-canvas" style={{ width: '100%', height: '380px' }} />
-        ) : (
-          <iframe
-            key={`${encodedQuery}-${mapType}-${zoomLevel}`}
-            title="Google Maps Corridor Live View"
-            width="100%"
-            height="380"
-            style={{
-              border: 0,
-              borderRadius: '10px',
-              display: 'block',
-              backgroundColor: '#0b131e',
-            }}
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-            src={googleMapsEmbedUrl}
-          />
-        )}
-
-        <div className="map-hint-overlay">
-          <span>📍 Pin Location: <strong>{customAddress.split(',')[0]}</strong></span>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodedQuery}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mini-maps-link"
-          >
-            Open in Google Maps ↗
-          </a>
-        </div>
+      {/* 360° Surroundings & Full Map Action Links */}
+      <div className="surroundings-actions-bar">
+        <a
+          href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${parseFloat(customLat).toFixed(6)},${parseFloat(customLng).toFixed(6)}&heading=0&pitch=0&fov=80`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="surroundings-action-btn street-view"
+          title="Inspect actual roadside surroundings, pavement & civil condition in 360°"
+        >
+          👀 Inspect 360° Street Surroundings (Google Street View) ↗
+        </a>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customAddress)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="surroundings-action-btn maps-link"
+          title="Open in Google Maps for live traffic"
+        >
+          🗺️ Open in Google Maps ↗
+        </a>
       </div>
 
       {/* Manual Coordinate / Custom Location Bar */}
@@ -656,7 +671,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
             <span>🌐 <strong>Latitude:</strong> {parseFloat(customLat).toFixed(4)}° N</span>
             <span>🌐 <strong>Longitude:</strong> {parseFloat(customLng).toFixed(4)}° E</span>
             <span className="region-badge">
-              🇮🇳 India · {customAddress.includes('Maharashtra') ? 'West Zone' : customAddress.includes('Karnataka') ? 'South Zone' : 'National Civil Network'}
+              🇮🇳 India &bull; {customAddress.includes('Maharashtra') ? 'West Zone' : customAddress.includes('Karnataka') ? 'South Zone' : 'National Civil Network'}
             </span>
           </div>
         </div>
