@@ -160,6 +160,7 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
   // 2. 'road'      -> Clear Road, Highway & Corridor Street Network
   // 3. 'terrain'   -> Topography, Elevation Contours & Physical Landscape
   const [activeViewMode, setActiveViewMode] = useState('satellite');
+  const [showManualCoords, setShowManualCoords] = useState(false);
 
   // Sync state if selectedLocation prop changes from parent
   useEffect(() => {
@@ -533,51 +534,37 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         </div>
       </div>
 
-      {/* 3 DISTINCT VIEW MODES SELECTOR */}
-      <div className="three-views-selector-bar">
+      {/* SEGMENTED 3-VIEW SWITCHER */}
+      <div className="view-mode-segmented-bar">
         <button
           type="button"
-          className={`view-mode-card ${activeViewMode === 'satellite' ? 'active' : ''}`}
+          className={`view-segment-btn ${activeViewMode === 'satellite' ? 'active' : ''}`}
           onClick={() => handleSwitchView('satellite')}
         >
-          <span className="view-card-icon">🛰️</span>
-          <div className="view-card-info">
-            <strong>1. Satellite & Surroundings</strong>
-            <small>Photorealistic aerial view of buildings, trees & surroundings</small>
-          </div>
-          {activeViewMode === 'satellite' && <span className="view-active-pill">ACTIVE</span>}
+          <span className="seg-icon">🛰️</span>
+          <span className="seg-label">Satellite Aerial</span>
         </button>
-
         <button
           type="button"
-          className={`view-mode-card ${activeViewMode === 'road' ? 'active' : ''}`}
+          className={`view-segment-btn ${activeViewMode === 'road' ? 'active' : ''}`}
           onClick={() => handleSwitchView('road')}
         >
-          <span className="view-card-icon">🛣️</span>
-          <div className="view-card-info">
-            <strong>2. Road & Highway Network</strong>
-            <small>Civil corridor lanes, expressways, street lines & bridges</small>
-          </div>
-          {activeViewMode === 'road' && <span className="view-active-pill">ACTIVE</span>}
+          <span className="seg-icon">🛣️</span>
+          <span className="seg-label">Road Network</span>
         </button>
-
         <button
           type="button"
-          className={`view-mode-card ${activeViewMode === 'terrain' ? 'active' : ''}`}
+          className={`view-segment-btn ${activeViewMode === 'terrain' ? 'active' : ''}`}
           onClick={() => handleSwitchView('terrain')}
         >
-          <span className="view-card-icon">⛰️</span>
-          <div className="view-card-info">
-            <strong>3. Topography & Terrain</strong>
-            <small>Elevation slope, relief contours & drainage watershed</small>
-          </div>
-          {activeViewMode === 'terrain' && <span className="view-active-pill">ACTIVE</span>}
+          <span className="seg-icon">⛰️</span>
+          <span className="seg-label">Topography</span>
         </button>
       </div>
 
       {/* INTERACTIVE MAP CANVAS */}
       <div className="google-map-embed-frame">
-        <div ref={mapElementRef} style={{ width: '100%', height: '390px', borderRadius: '10px' }} />
+        <div ref={mapElementRef} style={{ width: '100%', height: '370px', borderRadius: '10px' }} />
 
         {/* View Mode Tag & Hint */}
         <div className="map-hint-overlay">
@@ -590,102 +577,100 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
         </div>
       </div>
 
-      {/* 360° Surroundings & Full Map Action Links */}
-      <div className="surroundings-actions-bar">
-        <a
-          href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${parseFloat(customLat).toFixed(6)},${parseFloat(customLng).toFixed(6)}&heading=0&pitch=0&fov=80`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="surroundings-action-btn street-view"
-          title="Inspect actual roadside surroundings, pavement & civil condition in 360°"
-        >
-          👀 Inspect 360° Street Surroundings (Google Street View) ↗
-        </a>
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customAddress)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="surroundings-action-btn maps-link"
-          title="Open in Google Maps for live traffic"
-        >
-          🗺️ Open in Google Maps ↗
-        </a>
-      </div>
+      {/* UNIFIED LOCATION STATUS & GIS TOOLS FOOTER */}
+      <div className="map-location-tools-card">
+        <div className="location-tools-top-row">
+          <div className="location-pin-summary">
+            <span className="pin-point-icon">📍</span>
+            <div className="pin-text-block">
+              <div className="pin-corridor-title">{customAddress.split(',')[0]}</div>
+              <div className="pin-corridor-sub">
+                <span>{customAddress.split(',').slice(1, 3).join(',').trim() || 'India'}</span>
+                <span className="coord-mini-tag">
+                  {parseFloat(customLat).toFixed(4)}°N, {parseFloat(customLng).toFixed(4)}°E
+                </span>
+              </div>
+            </div>
+          </div>
 
-      {/* Manual Coordinate / Custom Location Bar */}
-      <div className="manual-coord-row">
-        <div className="coord-field">
-          <label>Address / Landmark</label>
-          <input
-            type="text"
-            value={customAddress}
-            onChange={(e) => {
-              setCustomAddress(e.target.value);
-              setIsConfirmed(false);
-            }}
-            placeholder="Enter Indian address or corridor name"
-          />
-        </div>
-        <div className="coord-field small">
-          <label>Latitude</label>
-          <input
-            type="number"
-            step="0.0001"
-            value={customLat}
-            onChange={(e) => {
-              setCustomLat(e.target.value);
-              setIsConfirmed(false);
-            }}
-          />
-        </div>
-        <div className="coord-field small">
-          <label>Longitude</label>
-          <input
-            type="number"
-            step="0.0001"
-            value={customLng}
-            onChange={(e) => {
-              setCustomLng(e.target.value);
-              setIsConfirmed(false);
-            }}
-          />
-        </div>
-        <button
-          type="button"
-          className={`apply-coord-btn ${isConfirmed ? 'confirmed' : ''}`}
-          onClick={handleManualConfirm}
-        >
-          {isConfirmed ? '✓ Confirmed' : 'Update Pin'}
-        </button>
-      </div>
-
-      {/* Selected Location Summary Card */}
-      <div className="selected-location-summary panel">
-        <div className="summary-icon-col">
-          <span className="loc-pin-icon">📍</span>
-        </div>
-        <div className="summary-info-col">
-          <div className="summary-eyebrow">CONFIRMED ASSESSMENT LOCATION</div>
-          <h4 className="summary-address">{customAddress}</h4>
-          <div className="summary-meta-row">
-            <span>🌐 <strong>Latitude:</strong> {parseFloat(customLat).toFixed(4)}° N</span>
-            <span>🌐 <strong>Longitude:</strong> {parseFloat(customLng).toFixed(4)}° E</span>
-            <span className="region-badge">
-              🇮🇳 India &bull; {customAddress.includes('Maharashtra') ? 'West Zone' : customAddress.includes('Karnataka') ? 'South Zone' : 'National Civil Network'}
-            </span>
+          <div className="location-quick-actions">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customAddress)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="map-action-pill"
+              title="Open in Google Maps for live traffic"
+            >
+              🗺️ Google Maps ↗
+            </a>
+            <a
+              href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${parseFloat(customLat).toFixed(6)},${parseFloat(customLng).toFixed(6)}&heading=0&pitch=0&fov=80`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="map-action-pill"
+              title="Inspect 360° surroundings in Google Street View"
+            >
+              👀 Street View ↗
+            </a>
+            <button
+              type="button"
+              className={`map-action-pill coords-toggle ${showManualCoords ? 'active' : ''}`}
+              onClick={() => setShowManualCoords(!showManualCoords)}
+              title="Edit exact coordinates"
+            >
+              ⚙️ {showManualCoords ? 'Hide Lat/Lng' : 'Edit Lat/Lng'}
+            </button>
           </div>
         </div>
-        <div className="summary-action-col">
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customAddress)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="external-map-btn"
-            title="Open in Google Maps"
-          >
-            Google Maps ↗
-          </a>
-        </div>
+
+        {/* Collapsible Manual Coordinates Drawer */}
+        {showManualCoords && (
+          <div className="manual-coord-drawer">
+            <div className="coord-field">
+              <label>Address / Landmark</label>
+              <input
+                type="text"
+                value={customAddress}
+                onChange={(e) => {
+                  setCustomAddress(e.target.value);
+                  setIsConfirmed(false);
+                }}
+                placeholder="Enter Indian address or corridor name"
+              />
+            </div>
+            <div className="coord-field small">
+              <label>Latitude</label>
+              <input
+                type="number"
+                step="0.0001"
+                value={customLat}
+                onChange={(e) => {
+                  setCustomLat(e.target.value);
+                  setIsConfirmed(false);
+                }}
+              />
+            </div>
+            <div className="coord-field small">
+              <label>Longitude</label>
+              <input
+                type="number"
+                step="0.0001"
+                value={customLng}
+                onChange={(e) => {
+                  setCustomLng(e.target.value);
+                  setIsConfirmed(false);
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              className={`apply-coord-btn ${isConfirmed ? 'confirmed' : ''}`}
+              onClick={handleManualConfirm}
+            >
+              {isConfirmed ? '✓ Saved' : 'Apply'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

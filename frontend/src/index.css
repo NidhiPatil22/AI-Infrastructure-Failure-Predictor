@@ -2979,27 +2979,33 @@ a {
 
 .predict-two-column-layout {
   display: grid;
-  grid-template-columns: minmax(380px, 1fr) minmax(440px, 1.15fr);
-  gap: 24px;
+  grid-template-columns: minmax(440px, 1.05fr) minmax(480px, 1.15fr);
+  gap: 28px;
   align-items: start;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1120px) {
   .predict-two-column-layout {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 }
+
+/* ==========================================================================
+   SPACIOUS GIS CORRIDOR MAP STUDIO
+   ========================================================================== */
 
 .google-corridor-map-wrapper {
   background: var(--road-panel-dark);
   border: 1px solid var(--road-border);
-  border-top: 3.5px solid var(--highway-yellow);
+  border-top: 4px solid var(--highway-yellow);
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .map-panel-header {
@@ -3007,15 +3013,15 @@ a {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  padding-bottom: 12px;
+  gap: 10px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--road-border);
 }
 
 .map-header-title h3 {
   margin: 2px 0 0;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 17px;
   color: #ffffff;
   letter-spacing: 0.3px;
 }
@@ -3024,7 +3030,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 11px;
   border-radius: 14px;
   font-size: 10.5px;
   font-weight: 700;
@@ -3035,12 +3041,6 @@ a {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
   border-color: rgba(16, 185, 129, 0.3);
-}
-
-.live-status-pill.amber {
-  background: rgba(254, 203, 0, 0.12);
-  color: var(--highway-yellow);
-  border-color: rgba(254, 203, 0, 0.3);
 }
 
 .pulse-dot {
@@ -3163,84 +3163,44 @@ a {
   background: #ffd633;
 }
 
-/* 3 Distinct Interactive View Modes Selector Bar */
-.three-views-selector-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 10px;
+/* SLEEK SEGMENTED VIEW MODE SWITCHER */
+.view-mode-segmented-bar {
+  display: flex;
+  background: #09101a;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--road-border);
+  gap: 4px;
 }
 
-@media (max-width: 768px) {
-  .three-views-selector-bar {
-    grid-template-columns: 1fr;
-  }
-}
-
-.view-mode-card {
-  position: relative;
+.view-segment-btn {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #0d1520;
-  border: 1px solid var(--road-border);
-  border-radius: 8px;
+  justify-content: center;
+  gap: 6px;
   padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
-  text-align: left;
-  transition: all 0.18s ease;
-}
-
-.view-mode-card:hover {
-  background: #142234;
-  border-color: var(--highway-yellow);
-  transform: translateY(-1px);
-}
-
-.view-mode-card.active {
-  background: #17283e;
-  border-color: var(--highway-yellow);
-  border-left: 3.5px solid var(--highway-yellow);
-  box-shadow: 0 4px 14px rgba(254, 203, 0, 0.12);
-}
-
-.view-card-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.view-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.view-card-info strong {
-  font-size: 11px;
-  color: #ffffff;
+  transition: all 0.16s ease;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.view-card-info small {
-  font-size: 9.5px;
-  color: var(--text-muted);
-  line-height: 1.25;
+.view-segment-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.view-active-pill {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  font-size: 8.5px;
-  font-weight: 800;
+.view-segment-btn.active {
   background: var(--highway-yellow);
   color: #0b131e;
-  padding: 1px 5px;
-  border-radius: 10px;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(254, 203, 0, 0.25);
 }
 
 .google-map-embed-frame {
@@ -3249,7 +3209,7 @@ a {
   overflow: hidden;
   border: 1px solid var(--road-border);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  min-height: 390px;
+  min-height: 370px;
   background: #0b131e;
 }
 
@@ -3291,209 +3251,113 @@ a {
   border-radius: 12px;
 }
 
-/* Surroundings & Google Maps Actions Bar */
-.surroundings-actions-bar {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
+/* UNIFIED LOCATION STATUS & GIS TOOLS FOOTER */
+.map-location-tools-card {
+  background: #0c1420;
+  border: 1px solid var(--road-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-@media (max-width: 600px) {
-  .surroundings-actions-bar {
-    grid-template-columns: 1fr;
-  }
-}
-
-.surroundings-action-btn {
+.location-tools-top-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.location-pin-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pin-point-icon {
+  font-size: 20px;
+}
+
+.pin-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pin-corridor-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pin-corridor-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.coord-mini-tag {
+  background: rgba(254, 203, 0, 0.12);
+  color: var(--highway-yellow);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 10.5px;
+}
+
+.location-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.map-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
   text-decoration: none;
-  text-align: center;
-  transition: all 0.16s ease;
+  border: 1px solid var(--road-border);
+  background: #101c2b;
+  color: #cbd5e1;
+  transition: all 0.15s ease;
+  cursor: pointer;
 }
 
-.surroundings-action-btn.street-view {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid #10b981;
-  color: #34d399;
+.map-action-pill:hover {
+  background: #172a42;
+  border-color: var(--highway-yellow);
+  color: #ffffff;
 }
 
-.surroundings-action-btn.street-view:hover {
-  background: #10b981;
-  color: #0b131e;
-  transform: translateY(-1px);
-}
-
-.surroundings-action-btn.maps-link {
-  background: rgba(254, 203, 0, 0.1);
-  border: 1px solid var(--highway-yellow);
-  color: var(--highway-yellow);
-}
-
-.surroundings-action-btn.maps-link:hover {
+.map-action-pill.coords-toggle.active {
   background: var(--highway-yellow);
   color: #0b131e;
-  transform: translateY(-1px);
-}
-
-/* Pin Pulse Animation */
-@keyframes pinPulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
-  }
-  70% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-/* Light Mode Overrides for 3 Views */
-[data-theme="light"] .view-mode-card {
-  background: #f8fafc;
-  border-color: var(--road-border);
-}
-
-[data-theme="light"] .view-mode-card.active {
-  background: #ffffff;
   border-color: var(--highway-yellow);
 }
 
-[data-theme="light"] .view-card-info strong {
-  color: var(--text-primary);
-}
-
-/* Fallback Indian Corridor Map */
-.fallback-corridor-map-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.fallback-config-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: rgba(254, 203, 0, 0.06);
-  border: 1px solid rgba(254, 203, 0, 0.25);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 11px;
-  color: #e2e8f0;
-}
-
-.banner-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.fallback-config-banner strong {
-  display: block;
-  color: var(--highway-yellow);
-  margin-bottom: 2px;
-  font-size: 12px;
-}
-
-.fallback-config-banner p {
-  margin: 0;
-  color: var(--text-muted);
-  line-height: 1.45;
-}
-
-.fallback-config-banner code {
-  color: var(--highway-yellow);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.indian-corridor-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  max-height: 240px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.corridor-node-card {
-  background: #111b27;
-  border: 1px solid var(--road-border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 4px;
-}
-
-.corridor-node-card:hover {
-  border-color: var(--highway-yellow);
-  background: #162436;
-  transform: translateY(-1px);
-}
-
-.corridor-node-card.selected {
-  border-color: var(--highway-yellow);
-  border-left: 3.5px solid var(--highway-yellow);
-  background: #18283d;
-}
-
-.corridor-card-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.node-icon {
-  font-size: 16px;
-}
-
-.corridor-card-top strong {
-  display: block;
-  font-size: 11.5px;
-  color: #ffffff;
-  line-height: 1.25;
-}
-
-.corridor-card-top small {
-  display: block;
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.corridor-coords-tag {
-  font-size: 9.5px;
-  color: var(--highway-yellow);
-  font-family: monospace;
-}
-
-.manual-coord-row {
+.manual-coord-drawer {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: 8px;
   align-items: end;
-  background: #0d1520;
-  padding: 10px;
+  background: #080d14;
+  padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid var(--road-border);
+  border: 1px dashed rgba(254, 203, 0, 0.35);
+  animation: fadeIn 0.2s ease;
 }
 
 @media (max-width: 600px) {
-  .manual-coord-row {
+  .manual-coord-drawer {
     grid-template-columns: 1fr;
   }
 }
@@ -3541,78 +3405,53 @@ a {
   border: 1px solid #10b981;
 }
 
-/* Selected Location Summary Card */
-.selected-location-summary {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #132235 0%, #0d1724 100%);
-  border: 1px solid var(--road-border);
-  border-left: 4px solid var(--highway-yellow);
-  border-radius: 10px;
+/* Pin Pulse Animation */
+@keyframes pinPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
 }
 
-.loc-pin-icon {
-  font-size: 24px;
-}
+/* ==========================================================================
+   ORDERLY REALISTIC ASSESSMENT FORM STYLES
+   ========================================================================== */
 
-.summary-info-col {
-  flex-grow: 1;
-}
-
-.summary-eyebrow {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--highway-yellow);
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-}
-
-.summary-address {
-  margin: 0 0 4px;
-  font-size: 13px;
-  color: #ffffff;
-  line-height: 1.35;
-}
-
-.summary-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 10.5px;
-  color: #cbd5e1;
-}
-
-.region-badge {
-  color: var(--highway-yellow);
-  font-weight: 600;
-}
-
-.external-map-btn {
-  background: rgba(254, 203, 0, 0.1);
-  border: 1px solid var(--highway-yellow);
-  color: var(--highway-yellow);
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: all 0.16s ease;
-}
-
-.external-map-btn:hover {
-  background: var(--highway-yellow);
-  color: #0b131e;
-}
-
-/* Realistic Assessment Form Styles */
 .realistic-assessment-form {
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--road-panel-dark);
+  border: 1px solid var(--road-border);
+  border-top: 4px solid var(--highway-yellow);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.form-step-card {
+  background: #0e1724;
+  border: 1px solid var(--road-border);
+  border-radius: 12px;
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.form-step-card .form-section-title {
+  margin-bottom: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .field-group-spaced {
@@ -3634,7 +3473,7 @@ a {
 .asset-type-chips-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 @media (max-width: 600px) {
@@ -3647,7 +3486,7 @@ a {
   background: #111c2a;
   border: 1px solid var(--road-border);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   color: #cbd5e1;
   font-size: 11px;
   font-weight: 600;
@@ -3704,7 +3543,7 @@ a {
 .condition-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 @media (max-width: 600px) {
@@ -3714,26 +3553,26 @@ a {
 }
 
 .condition-choice-card {
-  background: #101a27;
+  background: #111a26;
   border: 1px solid var(--road-border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.16s ease;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .condition-choice-card:hover {
   border-color: var(--highway-yellow);
-  background: #142234;
+  background: #162438;
 }
 
 .condition-choice-card.selected {
   border-color: var(--highway-yellow);
   border-left: 3.5px solid var(--highway-yellow);
-  background: #17263b;
+  background: #192b42;
 }
 
 .cond-card-header {
@@ -3743,7 +3582,7 @@ a {
 }
 
 .cond-card-header strong {
-  font-size: 12.5px;
+  font-size: 13px;
   color: #ffffff;
 }
 
@@ -3754,55 +3593,57 @@ a {
 
 .condition-choice-card p {
   margin: 0;
-  font-size: 10.5px;
-  color: var(--text-muted);
-  line-height: 1.35;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
 }
 
+/* 2-COLUMN READABLE CHIPS FOR TRAFFIC & RECENCY (PROPER SPACING) */
 .traffic-chips-grid, .recency-chips-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 @media (max-width: 600px) {
   .traffic-chips-grid, .recency-chips-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
 .traffic-chip, .recency-chip {
-  background: #101a27;
+  background: #111a26;
   border: 1px solid var(--road-border);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   cursor: pointer;
   text-align: left;
   transition: all 0.16s ease;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .traffic-chip:hover, .recency-chip:hover {
   border-color: var(--highway-yellow);
-  background: #142234;
+  background: #162438;
 }
 
 .traffic-chip.selected, .recency-chip.selected {
-  background: #17263b;
+  background: #192b42;
   border-color: var(--highway-yellow);
-  border-left: 3px solid var(--highway-yellow);
+  border-left: 3.5px solid var(--highway-yellow);
 }
 
 .traffic-chip strong, .recency-chip strong {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #ffffff;
 }
 
 .traffic-chip small, .recency-chip small {
-  font-size: 9.5px;
-  color: var(--text-muted);
+  font-size: 10.5px;
+  color: #94a3b8;
+  line-height: 1.35;
 }
 
 .notes-textarea {
@@ -3810,10 +3651,10 @@ a {
   background: #0f1722;
   border: 1px solid var(--road-border);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   color: #ffffff;
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 12px;
   resize: vertical;
   outline: none;
 }
@@ -3841,43 +3682,20 @@ a {
   text-decoration: underline;
 }
 
-/* Result Card Location Pill */
-.result-location-pill {
+.form-actions {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  background: rgba(254, 203, 0, 0.08);
-  border: 1px solid rgba(254, 203, 0, 0.3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 14px;
-  font-size: 11.5px;
-  color: #e2e8f0;
-}
-
-.coord-chip {
-  color: var(--highway-yellow);
-  font-family: monospace;
-}
-
-.mini-maps-link {
-  margin-left: auto;
-  color: var(--highway-yellow);
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 11px;
-}
-
-.mini-maps-link:hover {
-  text-decoration: underline;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--road-border);
 }
 
 .assessment-results-anchor {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 28px;
+  margin-top: 32px;
   animation: fadeIn 0.3s ease;
 }
 
@@ -3911,17 +3729,40 @@ a {
   color: var(--text-primary);
 }
 
-[data-theme="light"] .selected-location-summary {
-  background: #f8fafc;
+[data-theme="light"] .view-mode-segmented-bar {
+  background: #f1f5f9;
   border-color: var(--road-border);
-  border-left-color: var(--highway-yellow);
 }
 
-[data-theme="light"] .summary-address {
+[data-theme="light"] .view-segment-btn {
+  color: #64748b;
+}
+
+[data-theme="light"] .view-segment-btn.active {
+  background: var(--highway-yellow);
+  color: #0b131e;
+}
+
+[data-theme="light"] .map-location-tools-card {
+  background: #f8fafc;
+  border-color: var(--road-border);
+}
+
+[data-theme="light"] .pin-corridor-title {
   color: var(--text-primary);
 }
 
-[data-theme="light"] .corridor-node-card,
+[data-theme="light"] .map-action-pill {
+  background: #ffffff;
+  border-color: var(--road-border);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .form-step-card {
+  background: #ffffff;
+  border-color: var(--road-border);
+}
+
 [data-theme="light"] .condition-choice-card,
 [data-theme="light"] .asset-type-chip,
 [data-theme="light"] .traffic-chip,
@@ -3931,14 +3772,13 @@ a {
   color: var(--text-primary);
 }
 
-[data-theme="light"] .corridor-card-top strong,
 [data-theme="light"] .cond-card-header strong,
 [data-theme="light"] .traffic-chip strong,
 [data-theme="light"] .recency-chip strong {
   color: var(--text-primary);
 }
 
-[data-theme="light"] .manual-coord-row {
+[data-theme="light"] .manual-coord-drawer {
   background: #f1f5f9;
   border-color: var(--road-border);
 }
@@ -3948,3 +3788,4 @@ a {
   border-color: var(--road-border);
   color: var(--text-primary);
 }
+

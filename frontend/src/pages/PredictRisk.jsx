@@ -179,158 +179,164 @@ export default function PredictRisk() {
         {/* Right Column: Realistic 5-6 Input Assessment Form */}
         <div className="predict-col-form">
           <form className="panel realistic-assessment-form" onSubmit={handleSubmit} noValidate>
-            <div className="form-section-title">
-              <span className="step-number">01</span>
-              <div>
-                <h3>Asset Specifications</h3>
-                <p>Select the infrastructure type and structural material.</p>
-              </div>
-            </div>
-
-            {/* Field A: Infrastructure Asset Type */}
-            <div className="field-group-spaced">
-              <label className="field-label">
-                <span>Infrastructure Asset Type <b>*</b></span>
-              </label>
-              <div className="asset-type-chips-grid">
-                {ASSET_TYPES.map((a) => (
-                  <button
-                    key={a.value}
-                    type="button"
-                    className={`asset-type-chip ${assetType === a.value ? 'selected' : ''}`}
-                    onClick={() => handleAssetTypeChange(a.value)}
-                  >
-                    <span>{a.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-grid-two">
-              {/* Material Dropdown */}
-              <label className="field">
-                <span>Primary Structural Material <b>*</b></span>
-                <select value={material} onChange={(e) => setMaterial(e.target.value)}>
-                  {MATERIALS.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </label>
-
-              {/* Field B: Approximate Asset Age */}
-              <label className="field">
-                <span>Approximate Asset Age (Years) <b>*</b></span>
-                <div className="age-input-row">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={ageUnknown ? '' : ageYears}
-                    onChange={(e) => setAgeYears(e.target.value)}
-                    disabled={ageUnknown}
-                    placeholder={ageUnknown ? 'Unknown age' : 'e.g. 15'}
-                    required={!ageUnknown}
-                  />
-                  <label className="checkbox-sublabel">
-                    <input
-                      type="checkbox"
-                      checked={ageUnknown}
-                      onChange={(e) => setAgeUnknown(e.target.checked)}
-                    />
-                    <span>Unknown</span>
-                  </label>
+            {/* Step 01 Card: Asset Specifications */}
+            <div className="form-step-card">
+              <div className="form-section-title">
+                <span className="step-number">01</span>
+                <div>
+                  <h3>Asset Specifications</h3>
+                  <p>Select the infrastructure type and structural material.</p>
                 </div>
-              </label>
-            </div>
-
-            <div className="form-section-title form-section-spaced">
-              <span className="step-number">02</span>
-              <div>
-                <h3>Observable Field Condition</h3>
-                <p>Enter visible indicators verifiable without specialized lab instrumentation.</p>
               </div>
-            </div>
 
-            {/* Field C: Current Visible Condition */}
-            <div className="field-group-spaced">
-              <label className="field-label">
-                <span>Current Visible Physical Condition <b>*</b></span>
-              </label>
-              <div className="condition-cards-grid">
-                {CONDITION_OPTIONS.map((c) => (
-                  <div
-                    key={c.value}
-                    className={`condition-choice-card ${condition === c.value ? 'selected' : ''}`}
-                    onClick={() => setCondition(c.value)}
-                  >
-                    <div className="cond-card-header">
-                      <strong>{c.title}</strong>
-                      <span className="cond-badge">{c.badge}</span>
-                    </div>
-                    <p>{c.desc}</p>
+              {/* Field A: Infrastructure Asset Type */}
+              <div className="field-group-spaced">
+                <label className="field-label">
+                  <span>Infrastructure Asset Type <b>*</b></span>
+                </label>
+                <div className="asset-type-chips-grid">
+                  {ASSET_TYPES.map((a) => (
+                    <button
+                      key={a.value}
+                      type="button"
+                      className={`asset-type-chip ${assetType === a.value ? 'selected' : ''}`}
+                      onClick={() => handleAssetTypeChange(a.value)}
+                    >
+                      <span>{a.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-grid-two">
+                {/* Material Dropdown */}
+                <label className="field">
+                  <span>Primary Structural Material <b>*</b></span>
+                  <select value={material} onChange={(e) => setMaterial(e.target.value)}>
+                    {MATERIALS.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </label>
+
+                {/* Field B: Approximate Asset Age */}
+                <label className="field">
+                  <span>Approximate Asset Age (Years) <b>*</b></span>
+                  <div className="age-input-row">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={ageUnknown ? '' : ageYears}
+                      onChange={(e) => setAgeYears(e.target.value)}
+                      disabled={ageUnknown}
+                      placeholder={ageUnknown ? 'Unknown age' : 'e.g. 15'}
+                      required={!ageUnknown}
+                    />
+                    <label className="checkbox-sublabel">
+                      <input
+                        type="checkbox"
+                        checked={ageUnknown}
+                        onChange={(e) => setAgeUnknown(e.target.checked)}
+                      />
+                      <span>Unknown</span>
+                    </label>
                   </div>
-                ))}
+                </label>
               </div>
             </div>
 
-            {/* Field D: Traffic or Usage Level */}
-            <div className="field-group-spaced">
-              <label className="field-label">
-                <span>Traffic Volume / Usage Intensity <b>*</b></span>
-              </label>
-              <div className="traffic-chips-grid">
-                {TRAFFIC_OPTIONS.map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    className={`traffic-chip ${trafficLevel === t.value ? 'selected' : ''}`}
-                    onClick={() => setTrafficLevel(t.value)}
-                  >
-                    <strong>{t.title}</strong>
-                    <small>{t.desc}</small>
-                  </button>
-                ))}
+            {/* Step 02 Card: Observable Field Condition */}
+            <div className="form-step-card">
+              <div className="form-section-title">
+                <span className="step-number">02</span>
+                <div>
+                  <h3>Observable Field Condition</h3>
+                  <p>Enter visible indicators verifiable without specialized lab instrumentation.</p>
+                </div>
               </div>
-            </div>
 
-            {/* Field E: Maintenance Recency */}
-            <div className="field-group-spaced">
-              <label className="field-label">
-                <span>Maintenance Recency <b>*</b></span>
-              </label>
-              <div className="recency-chips-grid">
-                {RECENCY_OPTIONS.map((r) => (
-                  <button
-                    key={r.value}
-                    type="button"
-                    className={`recency-chip ${maintenanceRecency === r.value ? 'selected' : ''}`}
-                    onClick={() => setMaintenanceRecency(r.value)}
-                  >
-                    <strong>{r.title}</strong>
-                    <small>{r.desc}</small>
-                  </button>
-                ))}
+              {/* Field C: Current Visible Condition */}
+              <div className="field-group-spaced">
+                <label className="field-label">
+                  <span>Current Visible Physical Condition <b>*</b></span>
+                </label>
+                <div className="condition-cards-grid">
+                  {CONDITION_OPTIONS.map((c) => (
+                    <div
+                      key={c.value}
+                      className={`condition-choice-card ${condition === c.value ? 'selected' : ''}`}
+                      onClick={() => setCondition(c.value)}
+                    >
+                      <div className="cond-card-header">
+                        <strong>{c.title}</strong>
+                        <span className="cond-badge">{c.badge}</span>
+                      </div>
+                      <p>{c.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Field F: Optional Supporting Information */}
-            <div className="field-group-spaced">
-              <label className="field-label">
-                <span>Field Observation Notes (Optional)</span>
-              </label>
-              <textarea
-                className="notes-textarea"
-                rows="2"
-                value={observationNotes}
-                onChange={(e) => setObservationNotes(e.target.value)}
-                placeholder="e.g. Minor hairline cracks on northbound lane; water pooling near culvert joint after monsoon showers..."
-              />
-              <div className="cv-hint-tip">
-                <span>📸 Have pavement distress photos?</span>{' '}
-                <Link to="/dashboard" className="cv-hint-link">
-                  Launch Module 04: OpenCV Road Damage Inspector →
-                </Link>
+              {/* Field D: Traffic or Usage Level */}
+              <div className="field-group-spaced">
+                <label className="field-label">
+                  <span>Traffic Volume / Usage Intensity <b>*</b></span>
+                </label>
+                <div className="traffic-chips-grid">
+                  {TRAFFIC_OPTIONS.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      className={`traffic-chip ${trafficLevel === t.value ? 'selected' : ''}`}
+                      onClick={() => setTrafficLevel(t.value)}
+                    >
+                      <strong>{t.title}</strong>
+                      <small>{t.desc}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field E: Maintenance Recency */}
+              <div className="field-group-spaced">
+                <label className="field-label">
+                  <span>Maintenance Recency <b>*</b></span>
+                </label>
+                <div className="recency-chips-grid">
+                  {RECENCY_OPTIONS.map((r) => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      className={`recency-chip ${maintenanceRecency === r.value ? 'selected' : ''}`}
+                      onClick={() => setMaintenanceRecency(r.value)}
+                    >
+                      <strong>{r.title}</strong>
+                      <small>{r.desc}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field F: Optional Supporting Information */}
+              <div className="field-group-spaced">
+                <label className="field-label">
+                  <span>Field Observation Notes (Optional)</span>
+                </label>
+                <textarea
+                  className="notes-textarea"
+                  rows="2"
+                  value={observationNotes}
+                  onChange={(e) => setObservationNotes(e.target.value)}
+                  placeholder="e.g. Minor hairline cracks on northbound lane; water pooling near culvert joint after monsoon showers..."
+                />
+                <div className="cv-hint-tip">
+                  <span>📸 Have pavement distress photos?</span>{' '}
+                  <Link to="/dashboard" className="cv-hint-link">
+                    Launch Module 04: OpenCV Road Damage Inspector →
+                  </Link>
+                </div>
               </div>
             </div>
 
