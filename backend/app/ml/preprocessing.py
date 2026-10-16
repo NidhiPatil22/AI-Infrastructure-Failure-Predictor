@@ -24,27 +24,14 @@ def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Cleans raw dataset by removing duplicate records and adding row-level engineered features.
+
+    Zero-Data-Leakage Design:
+    Missing value imputation and numerical scaling are deferred to scikit-learn
+    ColumnTransformer pipelines fitted strictly on training partitions.
+    """
     df = df.copy()
     df = df.drop_duplicates().reset_index(drop=True)
-
-    for col in ['age_years', 'traffic_density', 'average_load', 'annual_rainfall', 'average_temperature',
-                'maintenance_count', 'days_since_maintenance', 'days_since_inspection', 'structural_score',
-                'corrosion_level', 'previous_failures', 'usage_intensity']:
-        if col in df.columns:
-            q1 = df[col].quantile(0.25)
-            q3 = df[col].quantile(0.75)
-            iqr = q3 - q1
-            lower = q1 - 1.5 * iqr
-            upper = q3 + 1.5 * iqr
-            df[col] = df[col].clip(lower=lower, upper=upper)
-
-    for col in df.columns:
-        if pd.api.types.is_object_dtype(df[col]):
-            mode = df[col].mode()
-            df[col] = df[col].fillna(mode.iloc[0] if not mode.empty else 'Unknown')
-        else:
-            df[col] = df[col].fillna(df[col].median())
-
     df = add_engineered_features(df)
     return df
 

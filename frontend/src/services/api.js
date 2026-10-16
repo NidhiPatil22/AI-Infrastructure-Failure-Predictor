@@ -35,6 +35,14 @@ export const sendChatMessage = (
 export const getChatStatus = (provider = null) =>
   client.get('/chat/status', { params: provider ? { provider } : {} }).then(({ data }) => data);
 
+export const getAuditSummary = () => client.get('/audit/summary').then(({ data }) => data);
+export const getAuditFindings = (params = {}) => client.get('/audit/findings', { params }).then(({ data }) => data);
+export const runPipelineTests = () => client.post('/pipeline-tests/run').then(({ data }) => data);
+export const getPipelineTestResults = () => client.get('/pipeline-tests/results').then(({ data }) => data);
+
+export const exportAuditCsvUrl = `${baseURL}/api/audit/export/csv`;
+export const exportAuditJsonUrl = `${baseURL}/api/audit/export/json`;
+
 export function getApiErrorMessage(error) {
   if (!error?.response) {
     return 'Unable to connect to the prediction server. Make sure the FastAPI backend is running.';

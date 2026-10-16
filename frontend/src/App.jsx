@@ -8,12 +8,16 @@ import Dashboard from './pages/Dashboard.jsx';
 import InfrastructurePriority from './pages/InfrastructurePriority.jsx';
 import ModelPerformance from './pages/ModelPerformance.jsx';
 import PredictRisk from './pages/PredictRisk.jsx';
+import DatasetAudit from './pages/DatasetAudit.jsx';
+import PipelineVerification from './pages/PipelineVerification.jsx';
 
 const pageInfo = {
   '/dashboard': ['Road Infrastructure Project', 'Continuous monitoring of highway corridors, bridges, and municipal assets.'],
   '/predict': ['Predict Corridor Risk', 'Assess structural deterioration and failure probability using trained ML models.'],
   '/analytics': ['Infrastructure Analytics', 'Explore clustering insights, silhouette scores, and condition metrics.'],
   '/model-performance': ['Model Performance', 'Review classification accuracy, regression errors, and model benchmarks.'],
+  '/audit': ['Dataset Quality & Schema Audit', 'Inspect real-time dataset health, domain integrity, and target distribution.'],
+  '/pipeline-tests': ['Clean Pipeline Verification', 'Automated statistical isolation tests and zero-data-leakage verification.'],
   '/priority': ['Maintenance Priority Queue', 'Review prioritized infrastructure assets and recommended interventions.'],
   '/about': ['Project Overview', 'Planning, construction lifecycle, machine learning architecture, and future scope.'],
 };
@@ -46,6 +50,8 @@ export default function App() {
             <Route path="/predict" element={<PredictRisk />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/model-performance" element={<ModelPerformance />} />
+            <Route path="/audit" element={<DatasetAudit />} />
+            <Route path="/pipeline-tests" element={<PipelineVerification />} />
             <Route path="/priority" element={<InfrastructurePriority />} />
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />

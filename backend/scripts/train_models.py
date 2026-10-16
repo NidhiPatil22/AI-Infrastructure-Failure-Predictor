@@ -38,14 +38,27 @@ def main():
         'feature_columns': classification['feature_columns'],
         'classification_metrics': classification['metrics'],
         'regression_metrics': regression['metrics'],
+        'sample_counts': classification.get('sample_counts'),
+        'selection_criterion': classification.get('selection_criterion'),
+        'best_classifier_name': classification.get('best_model_name'),
+        'best_regressor_name': regression.get('best_model_name'),
         'clustering_summary': clustering['cluster_summary'],
         'selected_k': clustering['selected_k'],
         'silhouette_values': clustering['silhouette_values'],
     }
 
     joblib.dump(bundle, MODEL_DIR / 'model_bundle.pkl')
-    save_json(MODEL_DIR / 'model_results.json', classification['metrics'])
-    save_json(MODEL_DIR / 'regression_results.json', regression['metrics'])
+    save_json(MODEL_DIR / 'model_results.json', {
+        'models': classification['metrics'],
+        'best_model': classification.get('best_model_name'),
+        'sample_counts': classification.get('sample_counts'),
+        'selection_criterion': classification.get('selection_criterion'),
+    })
+    save_json(MODEL_DIR / 'regression_results.json', {
+        'models': regression['metrics'],
+        'best_model': regression.get('best_model_name'),
+        'sample_counts': regression.get('sample_counts'),
+    })
     save_json(MODEL_DIR / 'cluster_results.json', {
         'selected_k': clustering['selected_k'],
         'silhouette_values': clustering['silhouette_values'],

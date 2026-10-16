@@ -8,6 +8,7 @@ from app.api.routes_infrastructure import router as infrastructure_router
 from app.api.routes_cv import router as cv_router
 from app.api.routes_optimization import router as optimization_router
 from app.api.routes_chat import router as chat_router
+from app.api.routes_audit import router as audit_router
 
 app = FastAPI(title='AI Urban Infrastructure Failure Predictor', version='1.0.0')
 
@@ -26,6 +27,7 @@ app.include_router(infrastructure_router, prefix='/api')
 app.include_router(cv_router, prefix='/api')
 app.include_router(optimization_router, prefix='/api')
 app.include_router(chat_router, prefix='/api')
+app.include_router(audit_router, prefix='/api')
 
 
 @app.get('/api/health')

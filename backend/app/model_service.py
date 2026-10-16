@@ -68,8 +68,9 @@ def build_prediction_payload(record: dict) -> dict:
     predicted_risk = risk_level_from_probability(probability)
 
     regressor = bundle['regressor_model']
+    reg_preprocessor = bundle.get('regressor_preprocessor', preprocessor)
     reg_input = input_df[feature_columns]
-    remaining_life = max(0.0, float(regressor.predict(preprocessor.transform(reg_input))[0]))
+    remaining_life = max(0.0, float(regressor.predict(reg_preprocessor.transform(reg_input))[0]))
 
     recommendation = (
         'Immediate inspection and preventive maintenance required.' if predicted_risk == 'HIGH'

@@ -44,6 +44,8 @@ from app.optimization.maintenance_scheduler import (
     run_optimization_comparison,
 )
 from app.structures.data_structures_demo import demonstrate_all_data_structures
+from app.ml.dataset_auditor import auditor
+from app.ml.pipeline_verifier import pipeline_verifier
 
 # =============================================================================
 # STREAMLIT CONFIGURATION (FULL WIDTH, NO SIDEBAR)
@@ -1241,6 +1243,8 @@ if current_page != "home":
             "structures": "08. Data Structures in Action",
             "survey": "09. Literature & Dataset Survey",
             "deployment": "10. Deployment & FastAPI Guide",
+            "audit": "11. Dataset Quality & Schema Audit",
+            "pipeline_tests": "12. Clean ML Pipeline Verification",
         }
         st.markdown(
             f"""
@@ -1401,6 +1405,22 @@ if current_page == "home":
             "desc": "Microservice architecture, asynchronous ASGI endpoints, OpenAPI Swagger docs, and containerization instructions.",
             "btn_label": "View Deployment Guide →",
         },
+        {
+            "id": "audit",
+            "num": "11",
+            "icon": "📋",
+            "title": "Dataset Quality & Schema Audit",
+            "desc": "Inspect dynamic telemetry health, civil domain constraints, target imbalance paradox, and export CSV/JSON reports.",
+            "btn_label": "Launch Dataset Audit →",
+        },
+        {
+            "id": "pipeline_tests",
+            "num": "12",
+            "icon": "🧪",
+            "title": "Clean Pipeline Verification",
+            "desc": "Execute automated statistical isolation and zero-data-leakage verification checks on ML preprocessing and evaluation.",
+            "btn_label": "Run Pipeline Tests →",
+        },
     ]
 
     # Render Cards in 3-column Grid
@@ -1473,28 +1493,28 @@ if current_page == "home":
                 st.session_state["current_page"] = card["id"]
                 st.rerun()
 
-    # 10th Card (Centered or Full Row)
-    row4_left, row4_center, row4_right = st.columns([1, 2, 1])
-    with row4_center:
-        card = cards_data[9]
-        st.markdown(
-            f"""
-            <div class="nav-card-container">
-                <div>
-                    <div class="card-header-badge">
-                        <span class="card-icon">{card['icon']}</span>
-                        <span class="card-num">{card['num']}</span>
+    row4 = st.columns(3)
+    for i in range(9, 12):
+        card = cards_data[i]
+        with row4[i - 9]:
+            st.markdown(
+                f"""
+                <div class="nav-card-container">
+                    <div>
+                        <div class="card-header-badge">
+                            <span class="card-icon">{card['icon']}</span>
+                            <span class="card-num">{card['num']}</span>
+                        </div>
+                        <h4 class="card-title">{card['title']}</h4>
+                        <p class="card-desc">{card['desc']}</p>
                     </div>
-                    <h4 class="card-title">{card['title']}</h4>
-                    <p class="card-desc">{card['desc']}</p>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
-            st.session_state["current_page"] = card["id"]
-            st.rerun()
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(card["btn_label"], key=f"btn_nav_{card['id']}", use_container_width=True):
+                st.session_state["current_page"] = card["id"]
+                st.rerun()
 
     st.markdown("<br><hr style='border: none; border-top: 1px solid rgba(148, 163, 184, 0.2); margin: 30px 0 20px 0;'>", unsafe_allow_html=True)
     st.markdown(
@@ -2342,3 +2362,166 @@ curl -X POST "http://localhost:8000/api/predict" \\
         """,
         language="bash",
     )
+
+
+# =============================================================================
+# SUBPAGE 11: DATASET QUALITY & SCHEMA AUDIT
+# =============================================================================
+elif current_page == "audit":
+    st.title("📋 11. Dataset Quality & Schema Audit")
+    st.markdown(
+        "Dynamic civil infrastructure telemetry audit evaluating data hygiene, "
+        "engineering range constraints, target distribution imbalance, and synthetic benchmark provenance."
+    )
+
+    col_btn1, col_btn2, col_btn3 = st.columns([1.5, 1.5, 3])
+    with col_btn1:
+        re_audit = st.button("🔄 Re-Audit Dataset", key="btn_reaudit_stream", use_container_width=True)
+    with col_btn2:
+        export_csv_btn = st.download_button(
+            "📥 Download Findings (CSV)",
+            data=auditor.export_csv_report(),
+            file_name="dataset_audit_findings.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with col_btn3:
+        export_json_btn = st.download_button(
+            "📄 Download Audit Report (JSON)",
+            data=auditor.export_json_report(),
+            file_name="dataset_audit_report.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+
+    audit_res = auditor.audit(force_refresh=re_audit)
+    summary = audit_res["summary"]
+    prov = audit_res["provenance"]
+    t_info = audit_res["target_analysis"]
+
+    # KPI Row
+    k1, k2, k3, k4, k5 = st.columns(5)
+    k1.metric("Total Records", f"{summary['total_records']:,}", "Active Telemetry")
+    k2.metric("Total Features", f"{summary['total_features']}", "15 Raw + 3 Engineered")
+    k3.metric("Data Quality Score", f"{summary['data_quality_score']}%", summary["data_quality_grade"])
+    k4.metric("Missing Cells", f"{summary['missing_percentage']}%", f"{summary['total_missing_cells']} cells across {summary['columns_with_missing_count']} cols")
+    k5.metric("Duplicate Rows", f"{summary['duplicate_rows']}", "Zero Nominal Clones")
+
+    st.markdown("<hr style='margin: 16px 0 20px 0;'>", unsafe_allow_html=True)
+
+    # Provenance Notice
+    st.markdown("### 🏛️ Dataset Provenance & Academic Limitations")
+    p_c1, p_c2 = st.columns(2)
+    with p_c1:
+        st.info(
+            f"**Dataset Origin:** {prov['dataset_origin']}\n\n"
+            f"**Generation Pipeline:** {prov['telemetry_description']}\n\n"
+            f"**Generator Script:** `{prov['generator_script']}`"
+        )
+    with p_c2:
+        st.warning(
+            f"**Academic Integrity Boundary:**\n\n"
+            f"{prov['academic_limitation']}\n\n"
+            f"**Configured Municipal Regions:** {prov['geography']}"
+        )
+
+    # Target Distribution & Imbalance
+    st.markdown("### ⚖️ Classification Target Distribution & Imbalance Assessment")
+    t_c1, t_c2 = st.columns([1, 1.2])
+    with t_c1:
+        st.write(f"Target Column: `{t_info['target_column']}` (0: Operational, 1: Failure)")
+        c_df = pd.DataFrame({
+            "Class": ["Operational (0)", "Failure Incident (1)"],
+            "Records": [t_info["class_counts"]["Operational (0)"], t_info["class_counts"]["Failure Incident (1)"]],
+            "Percentage": [t_info["class_percentages"]["Operational (0)"], t_info["class_percentages"]["Failure Incident (1)"]],
+        })
+        st.dataframe(c_df, use_container_width=True)
+        st.metric("Imbalance Ratio", t_info["imbalance_ratio"], t_info["severity"])
+
+    with t_c2:
+        st.markdown(f"**Why Imbalance Affects Model Evaluation:**\n\n{t_info['imbalance_rationale']}")
+        st.markdown("**Recommended Engineering Actions:**")
+        for act in t_info["recommended_actions"]:
+            st.markdown(f"- {act}")
+
+    # Domain Validation Rules
+    st.markdown("### 📐 Civil Engineering Domain Rules & Range Constraints")
+    domain_df = pd.DataFrame(audit_res["domain_validation"])
+    st.dataframe(domain_df, use_container_width=True)
+
+    # Missing Breakdown & Findings
+    m_col, f_col = st.columns(2)
+    with m_col:
+        st.markdown("### ❓ Missing Values by Column")
+        if audit_res["missing_breakdown"]:
+            st.dataframe(pd.DataFrame(audit_res["missing_breakdown"]), use_container_width=True)
+        else:
+            st.success("No missing values in active dataset.")
+
+    with f_col:
+        st.markdown("### ⚠️ Data Leakage Risk Checks")
+        for w in audit_res["leakage_warnings"]:
+            color = "warning" if w["severity"] == "WARNING" else "info"
+            if color == "warning":
+                st.warning(f"**{w['type']}** (`{w['field']}`): {w['detail']}")
+            else:
+                st.info(f"**{w['type']}** (`{w['field']}`): {w['detail']}")
+
+    # Record-Level Findings Preview
+    st.markdown("### 🔍 Record-Level Issues Sample")
+    findings_sample = audit_res.get("record_findings_sample", [])
+    if findings_sample:
+        st.dataframe(pd.DataFrame(findings_sample), use_container_width=True)
+    else:
+        st.success("No record-level validation issues found.")
+
+
+# =============================================================================
+# SUBPAGE 12: CLEAN ML PIPELINE VERIFICATION
+# =============================================================================
+elif current_page == "pipeline_tests":
+    st.title("🧪 12. Clean ML Pipeline Verification")
+    st.markdown(
+        "Automated zero-data-leakage verification suite testing statistical isolation "
+        "between training partitions and held-out test sets. Evaluates runtime imputer bounds, "
+        "scaler isolation, disjoint train/test index sets, and RUL non-negativity."
+    )
+
+    t_btn1, t_btn2 = st.columns([2, 4])
+    with t_btn1:
+        run_now = st.button("▶ Run Pipeline Tests", key="btn_run_tests_stream", use_container_width=True)
+
+    if run_now or "pipeline_test_cache" not in st.session_state:
+        with st.spinner("Executing 12 clean pipeline verification checks..."):
+            st.session_state["pipeline_test_cache"] = pipeline_verifier.run_all_checks()
+
+    res = st.session_state["pipeline_test_cache"]
+    counts = res["summary_counts"]
+
+    # Metrics Row
+    m1, m2, m3, m4, m5 = st.columns(5)
+    m1.metric("Overall Status", "ALL PASSED" if res["overall_status"] == "ALL_PASSED" else res["overall_status"], "Verified")
+    m2.metric("Passed Checks", counts["passed"], f"of {counts['total_checks']} total")
+    m3.metric("Warnings", counts["warnings"], "Leakage flags")
+    m4.metric("Failures", counts["failed"], "Protocol violations")
+    m5.metric("Execution Time", f"{res['execution_time_seconds']}s", "Fast probe suite")
+
+    st.markdown(f"*Last verified at: `{res['timestamp']}`*")
+    st.markdown("<hr style='margin: 14px 0 20px 0;'>", unsafe_allow_html=True)
+
+    # Category Filter
+    cats = ["All"] + sorted(list({c["category"] for c in res["checks"]}))
+    selected_cat = st.radio("Filter Checks by Category", cats, horizontal=True)
+
+    filtered_checks = res["checks"] if selected_cat == "All" else [c for c in res["checks"] if c["category"] == selected_cat]
+
+    for chk in filtered_checks:
+        icon = "✅" if chk["status"] == "PASSED" else ("⚠️" if chk["status"] == "WARNING" else "❌")
+        with st.expander(f"{icon} [{chk['status']}] {chk['name']} — {chk['check_id']}", expanded=True):
+            st.markdown(f"**Category:** `{chk['category']}` | **Reference:** `{chk['file_reference']}`")
+            st.markdown(f"**Objective:** {chk['description']}")
+            st.markdown(f"**Why This Matters:** {chk['rationale']}")
+            st.markdown("**Observed Verification Evidence:**")
+            st.code(chk["evidence"], language="text")
+            if chk.get("recommendation"):
+                st.warning(f"**Recommended Action:** {chk['recommendation']}")

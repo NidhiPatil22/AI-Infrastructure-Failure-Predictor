@@ -307,7 +307,11 @@ class RoadDamageDetector:
             img = cv2.imread(p)
             return img
         elif isinstance(image_input, bytes):
+            if len(image_input) == 0:
+                return None
             nparr = np.frombuffer(image_input, np.uint8)
+            if nparr.size == 0:
+                return None
             return cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         return None
 

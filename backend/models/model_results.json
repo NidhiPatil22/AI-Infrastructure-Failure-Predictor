@@ -1,75 +1,133 @@
 {
-  "Logistic Regression": {
-    "accuracy": 0.5705,
-    "precision": 0.6164,
-    "recall": 0.5885,
-    "f1": 0.6021,
-    "roc_auc": 0.6033,
-    "confusion_matrix": [
-      [
-        108,
-        89
+  "models": {
+    "Logistic Regression": {
+      "accuracy": 0.5705,
+      "precision": 0.6164,
+      "recall": 0.5885,
+      "f1": 0.6021,
+      "macro_f1": 0.5677,
+      "roc_auc": 0.6032,
+      "confusion_matrix": [
+        [
+          108,
+          89
+        ],
+        [
+          100,
+          143
+        ]
       ],
-      [
-        100,
-        143
-      ]
-    ]
-  },
-  "Decision Tree": {
-    "accuracy": 0.5432,
-    "precision": 0.6154,
-    "recall": 0.4609,
-    "f1": 0.5271,
-    "roc_auc": 0.5544,
-    "confusion_matrix": [
-      [
-        127,
-        70
+      "cv_5fold_f1_mean": 0.6319,
+      "cv_5fold_f1_std": 0.0206,
+      "fit_time_sec": 0.023,
+      "inference_time_ms": 0.4
+    },
+    "Decision Tree": {
+      "accuracy": 0.55,
+      "precision": 0.6364,
+      "recall": 0.4321,
+      "f1": 0.5147,
+      "macro_f1": 0.5476,
+      "roc_auc": 0.5805,
+      "confusion_matrix": [
+        [
+          137,
+          60
+        ],
+        [
+          138,
+          105
+        ]
       ],
-      [
-        131,
-        112
-      ]
-    ]
-  },
-  "Random Forest": {
-    "accuracy": 0.5545,
-    "precision": 0.5791,
-    "recall": 0.7078,
-    "f1": 0.637,
-    "roc_auc": 0.5863,
-    "confusion_matrix": [
-      [
-        72,
-        125
+      "cv_5fold_f1_mean": 0.5693,
+      "cv_5fold_f1_std": 0.0281,
+      "fit_time_sec": 0.052,
+      "inference_time_ms": 0.84
+    },
+    "Random Forest": {
+      "accuracy": 0.5636,
+      "precision": 0.5962,
+      "recall": 0.6502,
+      "f1": 0.622,
+      "macro_f1": 0.553,
+      "roc_auc": 0.6079,
+      "confusion_matrix": [
+        [
+          90,
+          107
+        ],
+        [
+          85,
+          158
+        ]
       ],
-      [
-        71,
-        172
-      ]
-    ]
-  },
-  "Random Forest (Tuned)": {
-    "accuracy": 0.55,
-    "precision": 0.5753,
-    "recall": 0.7078,
-    "f1": 0.6347,
-    "roc_auc": 0.5868,
-    "confusion_matrix": [
-      [
-        70,
-        127
+      "cv_5fold_f1_mean": 0.6489,
+      "cv_5fold_f1_std": 0.0167,
+      "fit_time_sec": 2.095,
+      "inference_time_ms": 53.77
+    },
+    "Gradient Boosting": {
+      "accuracy": 0.5545,
+      "precision": 0.5861,
+      "recall": 0.6584,
+      "f1": 0.6202,
+      "macro_f1": 0.5408,
+      "roc_auc": 0.5808,
+      "confusion_matrix": [
+        [
+          84,
+          113
+        ],
+        [
+          83,
+          160
+        ]
       ],
-      [
-        71,
-        172
-      ]
-    ],
-    "best_params": {
-      "max_depth": null,
-      "min_samples_leaf": 1,
-      "n_estimators": 350
+      "cv_5fold_f1_mean": 0.6459,
+      "cv_5fold_f1_std": 0.0231,
+      "fit_time_sec": 3.682,
+      "inference_time_ms": 1.97
+    },
+    "Random Forest (Tuned)": {
+      "accuracy": 0.5432,
+      "precision": 0.5755,
+      "recall": 0.6584,
+      "f1": 0.6142,
+      "macro_f1": 0.5272,
+      "roc_auc": 0.5893,
+      "confusion_matrix": [
+        [
+          79,
+          118
+        ],
+        [
+          83,
+          160
+        ]
+      ],
+      "cv_5fold_f1_mean": 0.6595,
+      "fit_time_sec": 108.604,
+      "inference_time_ms": 108761.84,
+      "best_params": {
+        "max_depth": 10,
+        "min_samples_leaf": 1,
+        "n_estimators": 250
+      }
     }
-  }
+  },
+  "best_model": "Random Forest",
+  "sample_counts": {
+    "total_samples": 2200,
+    "train_samples": 1760,
+    "test_samples": 440,
+    "train_class_distribution": {
+      "1": 970,
+      "0": 790
+    },
+    "test_class_distribution": {
+      "1": 243,
+      "0": 197
+    }
+  },
+  "selection_criterion": "Risk-Prioritized F1 & Recall: Prioritizes failure recall (>= 0.60) and balanced F1 score to minimize costly municipal false negatives."
 }

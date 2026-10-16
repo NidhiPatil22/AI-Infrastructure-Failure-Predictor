@@ -8,10 +8,15 @@ from sklearn.metrics import silhouette_score
 from app.ml.preprocessing import clean_dataset
 
 
+from sklearn.impute import SimpleImputer
+
+
 def train_clustering(df: pd.DataFrame):
     df = clean_dataset(df)
     cluster_features = ['age_years', 'traffic_density', 'average_load', 'structural_score', 'maintenance_count', 'days_since_maintenance', 'previous_failures', 'usage_intensity']
-    X = df[cluster_features]
+    X_raw = df[cluster_features]
+    imputer = SimpleImputer(strategy='median')
+    X = imputer.fit_transform(X_raw)
 
     silhouettes = []
     for k in range(2, 8):

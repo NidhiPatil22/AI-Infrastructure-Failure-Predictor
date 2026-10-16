@@ -1,6 +1,6 @@
 [
   {
-    "experiment_id": "2e69b09774c047068279b75f8824c839",
+    "experiment_id": "dea542d4bd3849beb47ebe8d59089400",
     "task": "Classification",
     "model_name": "Logistic Regression",
     "parameters": {
@@ -12,11 +12,11 @@
     "precision": 0.6034,
     "recall": 0.5885,
     "f1_score": 0.5958,
-    "roc_auc": 0.5915,
-    "train_time_sec": 1.901
+    "roc_auc": 0.591,
+    "train_time_sec": 1.698
   },
   {
-    "experiment_id": "e64862537cc7473dbc20dc2061ba8ebc",
+    "experiment_id": "789b16e5876746309ceb7467322f1595",
     "task": "Classification",
     "model_name": "Decision Tree",
     "parameters": {
@@ -29,10 +29,10 @@
     "recall": 0.535,
     "f1_score": 0.5765,
     "roc_auc": 0.5804,
-    "train_time_sec": 0.065
+    "train_time_sec": 0.046
   },
   {
-    "experiment_id": "8d330621d08a44d99966c9fc14b7314c",
+    "experiment_id": "5509dfa00de34db4bf1cd8b2e0ae4a23",
     "task": "Classification",
     "model_name": "Random Forest",
     "parameters": {
@@ -40,15 +40,15 @@
       "max_depth": 8,
       "class_weight": "balanced"
     },
-    "accuracy": 0.5659,
-    "precision": 0.6111,
-    "recall": 0.5885,
-    "f1_score": 0.5996,
-    "roc_auc": 0.6012,
-    "train_time_sec": 3.626
+    "accuracy": 0.5727,
+    "precision": 0.618,
+    "recall": 0.5926,
+    "f1_score": 0.605,
+    "roc_auc": 0.6022,
+    "train_time_sec": 2.591
   },
   {
-    "experiment_id": "a41026636c9e44f1a036fa358c345247",
+    "experiment_id": "204850ef53114ef18e6872c1cb2a960d",
     "task": "Classification",
     "model_name": "Gradient Boosting",
     "parameters": {
@@ -56,52 +56,52 @@
       "learning_rate": 0.08,
       "max_depth": 5
     },
-    "accuracy": 0.5295,
-    "precision": 0.5692,
-    "recall": 0.6091,
-    "f1_score": 0.5885,
-    "roc_auc": 0.5717,
-    "train_time_sec": 7.844
+    "accuracy": 0.5273,
+    "precision": 0.5676,
+    "recall": 0.6049,
+    "f1_score": 0.5857,
+    "roc_auc": 0.5744,
+    "train_time_sec": 6.58
   },
   {
-    "experiment_id": "795cdecd1ab84a93ac19ab241048c7fb",
+    "experiment_id": "f9dd84bb922f43028090d143acc5363e",
     "task": "Regression",
     "model_name": "Linear Regression",
     "parameters": {
       "fit_intercept": true
     },
-    "mae": 0.3004,
-    "mse": 1.2791,
-    "rmse": 1.131,
-    "r2_score": 0.9824,
-    "train_time_sec": 0.036
+    "mae": 0.3005,
+    "mse": 1.2766,
+    "rmse": 1.1299,
+    "r2_score": 0.9825,
+    "train_time_sec": 0.011
   },
   {
-    "experiment_id": "a93a591efe624fcca5a9cd4c37447d39",
+    "experiment_id": "eb3aa3bf1ce84ad0881d9efaf8e1be6b",
     "task": "Regression",
     "model_name": "Ridge Regression",
     "parameters": {
       "alpha": 1.5,
       "fit_intercept": true
     },
-    "mae": 0.3003,
-    "mse": 1.2789,
-    "rmse": 1.1309,
-    "r2_score": 0.9824,
-    "train_time_sec": 0.011
+    "mae": 0.3004,
+    "mse": 1.2764,
+    "rmse": 1.1298,
+    "r2_score": 0.9825,
+    "train_time_sec": 0.009
   },
   {
-    "experiment_id": "47860a27d50c4436a8cc93042e85d5bf",
+    "experiment_id": "2911c156d38d4a57963677e03f69aef5",
     "task": "Regression",
     "model_name": "Random Forest Regressor",
     "parameters": {
       "n_estimators": 200,
       "max_depth": 10
     },
-    "mae": 0.972,
-    "mse": 2.4971,
-    "rmse": 1.5802,
-    "r2_score": 0.9657,
-    "train_time_sec": 7.833
+    "mae": 0.9707,
+    "mse": 2.4941,
+    "rmse": 1.5793,
+    "r2_score": 0.9658,
+    "train_time_sec": 6.998
   }
 ]

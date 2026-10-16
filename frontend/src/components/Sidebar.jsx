@@ -5,6 +5,8 @@ const links = [
   { to: '/predict', label: 'Predict Risk', icon: '⚠️', isAi: true },
   { to: '/analytics', label: 'Analytics', icon: '📊' },
   { to: '/model-performance', label: 'Model Performance', icon: '🎯' },
+  { to: '/audit', label: 'Audit Dataset', icon: '📋' },
+  { to: '/pipeline-tests', label: 'Clean Pipeline', icon: '🧪', isAi: true },
   { to: '/priority', label: 'Priority Queue', icon: '🚦' },
   { to: '/about', label: 'Project Info', icon: 'ℹ' },
 ];

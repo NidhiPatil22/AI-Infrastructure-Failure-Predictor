@@ -58,13 +58,18 @@ def run_automl_training(
         "failure_history_score", "load_stress", "environmental_stress", "overall_condition_score",
     ]
 
-    X = df[all_features].fillna(df[all_features].median())
+    X = df[all_features]
     y = df["failure"]
 
     # Stratified 80/20 train/test split - guaranteed zero data leakage
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.20, random_state=random_seed, stratify=y
     )
+
+    # Impute missing values using training partition statistics only (zero data leakage)
+    train_medians = X_train.median()
+    X_train = X_train.fillna(train_medians)
+    X_test = X_test.fillna(train_medians)
 
     print(f"[AutoML] Initializing FLAML AutoML with {time_budget_sec}s time budget...")
     automl = AutoML()

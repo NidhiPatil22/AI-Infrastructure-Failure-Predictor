@@ -273,8 +273,23 @@ class MaintenanceOptimizer:
                     neighborhood_moves.append((obj, aid, cand_state, cand_eval))
 
             if not neighborhood_moves:
-                # No feasible non-tabu moves available
-                break
+                # If all feasible moves are tabu, standard Tabu Search selects the best feasible move
+                # rather than terminating prematurely, maintaining diversification across search basins
+                all_feasible = []
+                for aid in self.asset_ids:
+                    cand_state = set(current_state)
+                    if aid in cand_state:
+                        cand_state.remove(aid)
+                    else:
+                        cand_state.add(aid)
+                    cand_eval = self.evaluate_plan(cand_state)
+                    if cand_eval["is_feasible"]:
+                        all_feasible.append((cand_eval["objective_value"], aid, cand_state, cand_eval))
+                if all_feasible:
+                    all_feasible.sort(key=lambda x: x[0], reverse=True)
+                    neighborhood_moves.append(all_feasible[0])
+                else:
+                    break
 
             # Choose best move in neighborhood (even if downhill!)
             neighborhood_moves.sort(key=lambda x: x[0], reverse=True)

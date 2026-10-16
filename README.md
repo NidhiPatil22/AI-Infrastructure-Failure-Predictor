@@ -119,6 +119,8 @@ Municipal public works departments face severe operational constraints:
 | **Containerized Deployment & MLOps** | Portable container runtime and reproducible data pipeline specification. | Multi-stage `Dockerfile`, `.dockerignore`, and 4-stage `dvc.yaml` pipeline. | [`Dockerfile`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/Dockerfile)<br>[`dvc.yaml`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/dvc.yaml) | **Implemented and verified** |
 | **Runtime SHAP Force Plots** | Dynamic game-theoretic feature attribution plots generated during individual inference. | Documented in literature survey; planned for future runtime Streamlit integration. | [`docs/literature_and_dataset_survey.md`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/docs/literature_and_dataset_survey.md) | **Partially implemented** |
 | **ROVER AI Mascot & Conversational Assistant** | Intelligent co-pilot with visual 3D robot mascot for civil failure risk, CV distress, RUL estimation, and maintenance optimization. | Google Gemini / xAI Grok modular provider integration, FastAPI endpoint `POST /api/chat`, Streamlit & React interactive UI. | [`backend/app/ai/chat_service.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ai/chat_service.py)<br>[`backend/app/ai/llm_provider.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ai/llm_provider.py)<br>[`backend/app/ai/rover_component.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ai/rover_component.py) | **Implemented and verified** |
+| **Dataset Quality & Schema Audit** | Evaluates active telemetry health, civil engineering domain ranges, class imbalance paradox, and dataset provenance with CSV/JSON exports. | Dynamic data auditing engine, 17 civil domain rules, REST endpoints `GET /api/audit/summary`, `GET /api/audit/findings`, CSV/JSON streams. | [`backend/app/ml/dataset_auditor.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ml/dataset_auditor.py)<br>[`backend/app/api/routes_audit.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/api/routes_audit.py) | **Implemented and verified** |
+| **Clean ML Pipeline Verification** | Real executable verification suite proving statistical isolation between training partitions and held-out test sets across 12 automated checks. | Executable test harness with probe counterexamples, imputer/scaler isolation, index disjointness, REST endpoint `POST /api/pipeline-tests/run`. | [`backend/app/ml/pipeline_verifier.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ml/pipeline_verifier.py)<br>[`tests/test_audit_suite.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/tests/test_audit_suite.py) | **Implemented and verified** |
 
 ---
 
@@ -618,32 +620,76 @@ Implemented in [`backend/app/ml/automl.py`](file:///c:/Users/Asus/Downloads/ml_i
 
 ---
 
+## 18B. Dataset Quality Audit & Clean ML Pipeline Verification
+
+### 1. Dataset Quality & Schema Audit
+Implemented in [`backend/app/ml/dataset_auditor.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ml/dataset_auditor.py) and exposed via `GET /api/audit/summary`:
+- **Dynamic Telemetry Hygiene:** Dynamically computes total records ($2,200$), feature counts ($18$), missing values ($0.23\%$ across $91$ cells), and zero duplicate records directly from `backend/data/urban_infrastructure_data.csv`.
+- **Civil Engineering Domain Rules:** Validates 17 engineering physics constraints: non-negative age and RUL ($\ge 0$), bounded condition scores ($[0, 100]$), realistic ambient temperature ($-20^\circ\text{C}$ to $60^\circ\text{C}$), approved asset taxonomy (`Road`, `Bridge`, `Pipeline`, `Drainage`, `Streetlight`, `Electrical Pole`), and municipal zoning grid (`North`, `South`, `East`, `West`, `Central`, `Industrial`).
+- **Target Distribution & The Accuracy Paradox:** Assesses class distribution and explains why high raw accuracy can be deceptive in safety-critical domains when predicting catastrophic structural failures. Emphasizes Recall, Macro-F1, and balanced class weights.
+- **Provenance & Integrity Boundaries:** Accurately identifies dataset origin as a synthetic benchmark generated via physical simulation equations ([`backend/scripts/generate_data.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/scripts/generate_data.py)). Explicitly documents that benchmark metrics demonstrate pipeline mechanics rather than field sensor accuracy.
+- **Export Capabilities:** Streams downloadable record-level findings in CSV format and complete structured audit reports in JSON format.
+
+### 2. Clean ML Pipeline Verification
+Implemented in [`backend/app/ml/pipeline_verifier.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/backend/app/ml/pipeline_verifier.py) and exposed via `POST /api/pipeline-tests/run`:
+- **12 Automated Leakage & Protocol Checks:**
+  1. `CHK_01_SPLIT_PRECEDENCE`: Dataset partitioned into train and held-out test strictly before fitting any learned transformers.
+  2. `CHK_02_IMPUTER_ISOLATION`: SimpleImputer median parameters learned solely from training data (demonstrated via probe counterexample).
+  3. `CHK_03_SCALER_ISOLATION`: StandardScaler mean and variance fitted exclusively on training samples without test outlier contamination.
+  4. `CHK_04_TEST_IMMUTABILITY`: Transforming test data produces stateless transforms without mutating fitted pipeline state.
+  5. `CHK_05_UNSEEN_CATEGORICALS`: OneHotEncoder safely handles previously unseen levels (`handle_unknown='ignore'`) without exceptions or leakage.
+  6. `CHK_06_INDEX_DISJOINTNESS`: Train and test index partitions are mutually exclusive ($Train \cap Test = \emptyset$).
+  7. `CHK_07_TARGET_IDENTIFIER_EXCLUSION`: Target labels (`failure`, `remaining_useful_life`) and identifiers (`asset_id`) are excluded from feature matrix $X$.
+  8. `CHK_08_STRATIFIED_SPLIT`: Classification splitting uses stratified sampling to preserve identical failure incidence across partitions.
+  9. `CHK_09_RUL_NONNEGATIVE_BOUNDS`: Regression estimators strictly enforce non-negative life bounds ($\text{RUL} \ge 0.0$ years).
+  10. `CHK_10_REPRODUCIBILITY`: Deterministic splitting and benchmark reproduction under fixed random seed (`random_state=42`).
+  11. `CHK_11_CV_TRAINING_ISOLATION`: 5-fold cross-validation executed strictly within the training fold.
+  12. `CHK_12_AUTOML_MLFLOW_PROTOCOL`: FLAML and MLflow experiment tracking scripts follow identical zero-leakage evaluation protocols.
+- **Interpretation of Results:**
+  - `PASSED`: Check executed, validated with code inspection and executable counterexamples, and met all statistical criteria.
+  - `WARNING`: Potential risk detected (e.g. high feature correlation) that warrants engineering inspection.
+  - `FAILED`: Hard violation of ML best practices (e.g. index overlap or parameter mutation).
+  - `NOT_VERIFIED`: Prerequisite data or scripts unavailable for verification.
+- **Terminal Execution:**
+  ```bash
+  pytest -v tests/test_audit_suite.py
+  python -c "from app.ml.pipeline_verifier import pipeline_verifier; print(pipeline_verifier.run_all_checks())"
+  ```
+
+---
+
 ## 19. Application Pages & Interactive User Workflow
 
-The primary application [`streamlit_app.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/streamlit_app.py) provides **9 interactive pages**:
+The application suite is accessible through both the **Streamlit Multi-Page Full-Width App** ([`streamlit_app.py`](file:///c:/Users/Asus/Downloads/ml_infrastructure_predictor/streamlit_app.py)) and the **React Production SPA** (`frontend/src/`):
 
 ```
-Streamlit Navigation Menu:
-├── 1. 🏙️ Executive Dashboard
-├── 2. 🔮 Tabular Failure Prediction
-├── 3. 🛣️ Road Damage Detection (CV)
-├── 4. ⚡ Search Space Optimization
-├── 5. 📈 MLflow Experiment Tracking
-├── 6. 🤖 AutoML vs. Manual Models
-├── 7. 🧬 Data Structures in Action
-├── 8. 📖 Literature & Dataset Survey
-└── 9. 🚀 Deployment & FastAPI Guide
+Application Architecture & Navigation Modules:
+├── 01. 🏙️ Executive Dashboard
+├── 02. 🗺️ Google Maps & GIS Corridors
+├── 03. 🔮 Tabular Failure Prediction
+├── 04. 🛣️ Road Damage Detection (CV)
+├── 05. ⚡ Search Space Optimization
+├── 06. 📈 MLflow Experiment Tracking
+├── 07. 🤖 AutoML vs. Manual Models
+├── 08. 🧬 Data Structures in Action
+├── 09. 📖 Literature & Dataset Survey
+├── 10. 🚀 Deployment & FastAPI Guide
+├── 11. 📋 Dataset Quality & Schema Audit   [NEW FEATURE A]
+└── 12. 🧪 Clean ML Pipeline Verification  [NEW FEATURE B]
 ```
 
 1. **🏙️ Executive Dashboard:** Displays high-level infrastructure portfolio health metrics (Total Monitored Assets, Failure Incident Rate, Average RUL, High-Risk Asset Count), interactive bar charts by municipal zone, and RUL vs. Structural Score scatter plots.
-2. **🔮 Tabular Failure Prediction:** Provides interactive sliders and select boxes for entering physical and operational asset telemetry. Computes real-time failure probability, risk classification (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), RUL estimate, top risk factors, and recommended maintenance actions.
-3. **🛣️ Road Damage Detection (CV):** Interactive computer vision interface. Users can upload custom road surface photos or choose from procedural test samples (`pothole`, `crack`, `intact`). Displays intermediate filter pipeline stages (CLAHE, Canny, Morphology) and annotated bounding boxes with the computed Road Damage Index (RDI).
-4. **⚡ Search Space Optimization:** Interactive maintenance scheduling playground. Users configure budget and crew hour limits, running Hill Climbing, Beam Search, and Tabu Search side-by-side to compare risk reduction, budget utilization, and explore the local optimum counterexample.
-5. **📈 MLflow Experiment Tracking:** Reads experiment records directly from the MLflow SQLite database, rendering comparison tables, training time charts, and confusion matrix artifacts for all classification and regression runs.
-6. **🤖 AutoML vs. Manual Models:** Displays the FLAML leaderboard, configuration details of the discovered `ExtraTree` model, and side-by-side metric comparisons against manual baselines.
-7. **🧬 Data Structures in Action:** Interactive demonstration benchmarking the 6 core data structures: NumPy SIMD vector operations, SciPy CSR sparse matrix memory savings (98%), Decision Tree text rules, NetworkX graph centrality, Heap emergency triage, and dictionary caching.
-8. **📖 Literature & Dataset Survey:** Presents verified academic literature citations across predictive maintenance, computer vision, XAI, RUL estimation, and search optimization, along with standard benchmark datasets.
-9. **🚀 Deployment & FastAPI Guide:** Documents architecture diagrams, containerization workflows, and interactive cURL commands for calling the FastAPI REST microservice.
+2. **🗺️ Google Maps & GIS Corridors:** Live corridor locator with preset highway corridors (Golden Gate, Marine Drive, Bandra-Worli Sea Link), satellite tile layers, and GIS risk markers.
+3. **🔮 Tabular Failure Prediction:** Provides interactive sliders and select boxes for entering physical and operational asset telemetry. Computes real-time failure probability, risk classification (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), RUL estimate, top risk factors, and recommended maintenance actions.
+4. **🛣️ Road Damage Detection (CV):** Interactive computer vision interface. Users can upload custom road surface photos or choose from procedural test samples (`pothole`, `crack`, `intact`). Displays intermediate filter pipeline stages (CLAHE, Canny, Morphology) and annotated bounding boxes with the computed Road Damage Index (RDI).
+5. **⚡ Search Space Optimization:** Interactive maintenance scheduling playground. Users configure budget and crew hour limits, running Hill Climbing, Beam Search, and Tabu Search side-by-side to compare risk reduction, budget utilization, and explore the local optimum counterexample.
+6. **📈 MLflow Experiment Tracking:** Reads experiment records directly from the MLflow SQLite database, rendering comparison tables, training time charts, and confusion matrix artifacts for all classification and regression runs.
+7. **🤖 AutoML vs. Manual Models:** Displays the FLAML leaderboard, configuration details of the discovered `ExtraTree` model, and side-by-side metric comparisons against manual baselines.
+8. **🧬 Data Structures in Action:** Interactive demonstration benchmarking the 6 core data structures: NumPy SIMD vector operations, SciPy CSR sparse matrix memory savings (98%), Decision Tree text rules, NetworkX graph centrality, Heap emergency triage, and dictionary caching.
+9. **📖 Literature & Dataset Survey:** Presents verified academic literature citations across predictive maintenance, computer vision, XAI, RUL estimation, and search optimization, along with standard benchmark datasets.
+10. **🚀 Deployment & FastAPI Guide:** Documents architecture diagrams, containerization workflows, and interactive cURL commands for calling the FastAPI REST microservice.
+11. **📋 Dataset Quality & Schema Audit:** Dynamic dataset overview metrics, domain constraint validations, class imbalance analysis with safety recommendations, and exportable CSV findings and JSON summary reports.
+12. **🧪 Clean ML Pipeline Verification:** Real automated verification runner testing preprocessing statistical isolation, imputer bounds, scaler independence, train/test disjointness, and non-negative RUL prognosis.
 
 ---
 

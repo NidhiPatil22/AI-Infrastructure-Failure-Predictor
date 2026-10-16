@@ -1,12 +1,31 @@
 {
-  "Linear Regression": {
-    "mae": 0.263,
-    "rmse": 0.9497,
-    "r2": 0.9876
+  "models": {
+    "Linear Regression": {
+      "mae": 0.2564,
+      "rmse": 0.862,
+      "r2": 0.9898,
+      "negative_predictions_raw_count": 3,
+      "fit_time_sec": 0.009
+    },
+    "Random Forest Regressor": {
+      "mae": 0.98,
+      "rmse": 1.5878,
+      "r2": 0.9654,
+      "negative_predictions_raw_count": 0,
+      "fit_time_sec": 6.29
+    },
+    "Gradient Boosting Regressor": {
+      "mae": 0.6126,
+      "rmse": 1.142,
+      "r2": 0.9821,
+      "negative_predictions_raw_count": 2,
+      "fit_time_sec": 3.721
+    }
   },
-  "Random Forest Regressor": {
-    "mae": 0.9592,
-    "rmse": 1.4746,
-    "r2": 0.9701
+  "best_model": "Linear Regression",
+  "sample_counts": {
+    "total_samples": 2200,
+    "train_samples": 1760,
+    "test_samples": 440
   }
 }

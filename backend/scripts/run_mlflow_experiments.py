@@ -101,8 +101,8 @@ def run_experiments():
         "failure_history_score", "load_stress", "environmental_stress", "overall_condition_score",
     ]
 
-    # Impute and clean
-    X = df[all_features].fillna(df[all_features].median())
+    # Zero-Data-Leakage Splits: Split before computing any imputation statistics
+    X = df[all_features]
     y_clf = df["failure"]
     y_reg = df["remaining_useful_life"]
 
@@ -110,11 +110,17 @@ def run_experiments():
     X_train_c, X_test_c, y_train_c, y_test_c = train_test_split(
         X, y_clf, test_size=0.20, random_state=42, stratify=y_clf
     )
+    train_c_medians = X_train_c.median()
+    X_train_c = X_train_c.fillna(train_c_medians)
+    X_test_c = X_test_c.fillna(train_c_medians)
 
     # Regression Split
     X_train_r, X_test_r, y_train_r, y_test_r = train_test_split(
         X, y_reg, test_size=0.20, random_state=42
     )
+    train_r_medians = X_train_r.median()
+    X_train_r = X_train_r.fillna(train_r_medians)
+    X_test_r = X_test_r.fillna(train_r_medians)
 
     dataset_metadata = {
         "dataset_name": "urban_infrastructure_data.csv",
