@@ -63,6 +63,15 @@ The current implementation actively supports **six verified asset categories** m
 - **Electrical Poles:** Monitored for mechanical loading, weathering, and material durability.
 
 ---
+<img width="947" height="416" alt="image" src="https://github.com/user-attachments/assets/5ef87233-f84e-4621-8411-cf3157d21bb1" />
+<img width="745" height="353" alt="image" src="https://github.com/user-attachments/assets/49731088-41c4-4aca-aa64-e176ad649ff3" />
+<img width="737" height="299" alt="image" src="https://github.com/user-attachments/assets/d4256da3-d174-4ee4-92b0-1897b90b6a66" />
+<img width="775" height="416" alt="image" src="https://github.com/user-attachments/assets/c3444da8-679b-4d1d-b3fd-d07ee84c71cd" />
+<img width="793" height="413" alt="image" src="https://github.com/user-attachments/assets/5a574b6f-f610-4ad7-91d4-ccc5a09ab040" />
+<img width="794" height="419" alt="image" src="https://github.com/user-attachments/assets/c7d7e0ae-e439-4fca-b95c-8688d8ddf006" />
+
+
+
 
 ## 2. Problem Statement
 
