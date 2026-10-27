@@ -3,23 +3,21 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import About from './pages/About.jsx';
-import Analytics from './pages/Analytics.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import InfrastructureMapPage from './pages/InfrastructureMapPage.jsx';
+import DamageReportingPage from './pages/DamageReportingPage.jsx';
 import InfrastructurePriority from './pages/InfrastructurePriority.jsx';
-import ModelPerformance from './pages/ModelPerformance.jsx';
 import PredictRisk from './pages/PredictRisk.jsx';
 import DatasetAudit from './pages/DatasetAudit.jsx';
-import PipelineVerification from './pages/PipelineVerification.jsx';
 
 const pageInfo = {
-  '/dashboard': ['Road Infrastructure Project', 'Continuous monitoring of highway corridors, bridges, and municipal assets.'],
+  '/dashboard': ['Pune Infrastructure Dashboard', 'Continuous telemetry monitoring of 50,000 road segments and civil assets across Pune.'],
+  '/map': ['Pune Infrastructure GIS Map', 'Live spatial monitoring and condition inspection restricted to Pune city boundary.'],
+  '/damage-reports': ['Report Infrastructure Damage', 'Citizen & contractor damage upload with automatic boundary check, CV detection, and asset linking.'],
   '/predict': ['Predict Corridor Risk', 'Assess structural deterioration and failure probability using trained ML models.'],
-  '/analytics': ['Infrastructure Analytics', 'Explore clustering insights, silhouette scores, and condition metrics.'],
-  '/model-performance': ['Model Performance', 'Review classification accuracy, regression errors, and model benchmarks.'],
-  '/audit': ['Dataset Quality & Schema Audit', 'Inspect real-time dataset health, domain integrity, and target distribution.'],
-  '/pipeline-tests': ['Clean Pipeline Verification', 'Automated statistical isolation tests and zero-data-leakage verification.'],
-  '/priority': ['Maintenance Priority Queue', 'Review prioritized infrastructure assets and recommended interventions.'],
-  '/about': ['Project Overview', 'Planning, construction lifecycle, machine learning architecture, and future scope.'],
+  '/priority': ['Maintenance Priority Queue', 'Review prioritized infrastructure assets, reported defect escalations, and Knapsack scheduling.'],
+  '/audit': ['Dataset Quality & Schema Audit', 'Inspect real-time 50,000-record dataset health, domain integrity, and target distribution.'],
+  '/about': ['Project Provenance & Architecture', 'Documentation, dataset provenance, ML pipeline, and GIS boundary scope.'],
 };
 
 function NotFound() {
@@ -27,7 +25,7 @@ function NotFound() {
     <section className="panel not-found">
       <span className="eyebrow">ROAD HAZARD / ROUTE NOT FOUND</span>
       <h2>This road is currently closed.</h2>
-      <p>Use the navigation menu to return to the active infrastructure project corridors.</p>
+      <p>Use the navigation menu to return to the active Pune infrastructure monitoring corridors.</p>
     </section>
   );
 }
@@ -36,7 +34,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const path = location.pathname === '/' ? '/dashboard' : location.pathname;
-  const [title, description] = pageInfo[path] || ['Road Infrastructure Project', ''];
+  const [title, description] = pageInfo[path] || ['Pune Infrastructure Monitor', ''];
 
   return (
     <div className="app-shell">
@@ -47,22 +45,24 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/map" element={<InfrastructureMapPage />} />
+            <Route path="/damage-reports" element={<DamageReportingPage />} />
             <Route path="/predict" element={<PredictRisk />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/model-performance" element={<ModelPerformance />} />
-            <Route path="/audit" element={<DatasetAudit />} />
-            <Route path="/pipeline-tests" element={<PipelineVerification />} />
             <Route path="/priority" element={<InfrastructurePriority />} />
+            <Route path="/audit" element={<DatasetAudit />} />
             <Route path="/about" element={<About />} />
+            {/* Legacy redirect safeguards without restoring removed tabs */}
+            <Route path="/analytics" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/model-performance" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <footer className="page-footer">
             <div className="footer-brand">
               <span className="footer-dot-signal green" />
-              <strong>ROAD INFRASTRUCTURE PROJECT</strong>
+              <strong>PUNE URBAN INFRASTRUCTURE MONITOR</strong>
             </div>
             <div className="footer-tagline">
-              <span>Planning</span> · <span>Construction</span> · <span>Progress</span> · <span>Impact</span>
+              <span>PMC & PCMC Boundary</span> · <span>100K+ Monitored Assets</span> · <span>AI Predictive Maintenance</span>
             </div>
           </footer>
         </div>

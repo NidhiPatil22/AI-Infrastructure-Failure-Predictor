@@ -2,25 +2,88 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Curated Major Indian Corridors & Landmarks for instant selection and testing
+// Curated Pune & Regional Corridors for instant selection and testing
 const POPULAR_INDIAN_CORRIDORS = [
   {
-    name: 'Bandra-Worli Sea Link',
+    name: 'Shivajinagar - FC Road Corridor',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'FC Road, Shivajinagar, Pune, Maharashtra 411005, India',
+    latitude: 18.5314,
+    longitude: 73.8446,
+    type: 'Road',
+  },
+  {
+    name: 'Kothrud Paud Road Flyover',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Paud Road, Kothrud, Pune, Maharashtra 411038, India',
+    latitude: 18.5074,
+    longitude: 73.8077,
+    type: 'Bridge',
+  },
+  {
+    name: 'Aundh - University Circle Flyover',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'University Road, Aundh, Pune, Maharashtra 411007, India',
+    latitude: 18.5580,
+    longitude: 73.8075,
+    type: 'Bridge',
+  },
+  {
+    name: 'Hadapsar - Magarpatta Corridor',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Magarpatta Road, Hadapsar, Pune, Maharashtra 411028, India',
+    latitude: 18.5089,
+    longitude: 73.9259,
+    type: 'Road',
+  },
+  {
+    name: 'Yerawada Mula-Mutha River Bridge',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Yerawada Bridge, Mula-Mutha River, Pune, Maharashtra 411006, India',
+    latitude: 18.5502,
+    longitude: 73.8824,
+    type: 'Bridge',
+  },
+  {
+    name: 'Bhosari MIDC Industrial Transit Spine',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Bhosari MIDC, Pune, Maharashtra 411026, India',
+    latitude: 18.6270,
+    longitude: 73.8540,
+    type: 'Road',
+  },
+  {
+    name: 'Katraj Tunnel Bypass Corridor',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Katraj Ghat Bypass, Pune, Maharashtra 411046, India',
+    latitude: 18.4529,
+    longitude: 73.8553,
+    type: 'Road',
+  },
+  {
+    name: 'Mumbai - Pune Expressway (Pune Bypass)',
+    city: 'Pune',
+    state: 'Maharashtra',
+    address: 'Mumbai - Pune Expressway, Wakad, Pune, Maharashtra 411057, India',
+    latitude: 18.5986,
+    longitude: 73.7645,
+    type: 'Road',
+  },
+  {
+    name: 'Bandra-Worli Sea Link (Regional Reference)',
     city: 'Mumbai',
     state: 'Maharashtra',
     address: 'Bandra-Worli Sea Link, Mumbai, Maharashtra 400050, India',
     latitude: 19.033,
     longitude: 72.8164,
     type: 'Bridge',
-  },
-  {
-    name: 'Mumbai - Pune Expressway',
-    city: 'Pune',
-    state: 'Maharashtra',
-    address: 'Mumbai - Pune Expressway, Lonavala-Khandala, Maharashtra 410401, India',
-    latitude: 18.756,
-    longitude: 73.4116,
-    type: 'Road',
   },
   {
     name: 'Atal Setu (MTHL)',
@@ -147,10 +210,10 @@ export default function GoogleCorridorMap({ selectedLocation, onLocationSelect }
   const markerRef = useRef(null);
   const baseLayersRef = useRef({});
 
-  const [customLat, setCustomLat] = useState(selectedLocation?.latitude || 18.756);
-  const [customLng, setCustomLng] = useState(selectedLocation?.longitude || 73.4116);
+  const [customLat, setCustomLat] = useState(selectedLocation?.latitude || 18.5314);
+  const [customLng, setCustomLng] = useState(selectedLocation?.longitude || 73.8446);
   const [customAddress, setCustomAddress] = useState(
-    selectedLocation?.address || 'Mumbai - Pune Expressway, Maharashtra, India'
+    selectedLocation?.address || 'FC Road, Shivajinagar, Pune, Maharashtra, India'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(true);

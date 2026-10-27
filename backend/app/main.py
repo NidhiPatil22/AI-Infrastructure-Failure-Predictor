@@ -10,6 +10,8 @@ from app.api.routes_optimization import router as optimization_router
 from app.api.routes_chat import router as chat_router
 from app.api.routes_audit import router as audit_router
 
+from app.api.routes_damage import router as damage_router
+
 app = FastAPI(title='AI Urban Infrastructure Failure Predictor', version='1.0.0')
 
 app.add_middleware(
@@ -24,6 +26,7 @@ app.include_router(dashboard_router, prefix='/api')
 app.include_router(prediction_router, prefix='/api')
 app.include_router(analytics_router, prefix='/api')
 app.include_router(infrastructure_router, prefix='/api')
+app.include_router(damage_router, prefix='/api')
 app.include_router(cv_router, prefix='/api')
 app.include_router(optimization_router, prefix='/api')
 app.include_router(chat_router, prefix='/api')

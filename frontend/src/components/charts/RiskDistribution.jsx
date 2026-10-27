@@ -2,9 +2,32 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = ['#10b981', '#facc15', '#ef4444'];
 
-export default function RiskDistribution({ data = [] }) {
+export default function RiskDistribution({ data = [], onRetry }) {
   const available = data.filter((item) => Number(item.value) > 0);
-  if (!available.length) return <div className="chart-empty">Risk distribution is not available from this response.</div>;
+  if (!available.length) {
+    return (
+      <div className="chart-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '180px', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
+        <span>Risk distribution temporarily unavailable</span>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            style={{
+              background: 'transparent',
+              border: '1px solid #22344a',
+              borderRadius: '4px',
+              color: '#fecb00',
+              padding: '4px 10px',
+              fontSize: '11px',
+              cursor: 'pointer',
+            }}
+          >
+            Retry Loading
+          </button>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="chart-with-legend">
       <div className="chart-area chart-donut">

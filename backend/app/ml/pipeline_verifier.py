@@ -27,7 +27,9 @@ from app.ml.preprocessing import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+PRIMARY_DATA_PATH = ROOT / "data" / "pune_expanded_road_infrastructure_50000.csv"
+LEGACY_DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+DATA_PATH = PRIMARY_DATA_PATH if PRIMARY_DATA_PATH.exists() else LEGACY_DATA_PATH
 
 
 class PipelineVerifier:

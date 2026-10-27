@@ -2,12 +2,11 @@ import { NavLink } from 'react-router-dom';
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: '🛣' },
+  { to: '/map', label: 'Infrastructure Map', icon: '🗺', tag: 'PUNE' },
+  { to: '/damage-reports', label: 'Damage Reports', icon: '📸', tag: 'NEW' },
   { to: '/predict', label: 'Predict Risk', icon: '⚠️', isAi: true },
-  { to: '/analytics', label: 'Analytics', icon: '📊' },
-  { to: '/model-performance', label: 'Model Performance', icon: '🎯' },
-  { to: '/audit', label: 'Audit Dataset', icon: '📋' },
-  { to: '/pipeline-tests', label: 'Clean Pipeline', icon: '🧪', isAi: true },
   { to: '/priority', label: 'Priority Queue', icon: '🚦' },
+  { to: '/audit', label: 'Dataset Audit', icon: '📋' },
   { to: '/about', label: 'Project Info', icon: 'ℹ' },
 ];
 
@@ -30,8 +29,8 @@ export default function Sidebar({ open, onNavigate }) {
             </span>
           </div>
           <div>
-            <strong className="brand-title">ROAD<span>INFRA</span></strong>
-            <small className="brand-tagline">PLANNING · PROGRESS · IMPACT</small>
+            <strong className="brand-title">PUNE<span>INFRA</span></strong>
+            <small className="brand-tagline">100K+ MONITORED ASSETS</small>
           </div>
         </div>
 
@@ -47,6 +46,7 @@ export default function Sidebar({ open, onNavigate }) {
               <span className="nav-icon" aria-hidden="true">{link.icon}</span>
               <span>{link.label}</span>
               {link.isAi && <span className="nav-new">AI ML</span>}
+              {link.tag && !link.isAi && <span className="nav-tag-pune">{link.tag}</span>}
             </NavLink>
           ))}
         </nav>
@@ -59,8 +59,8 @@ export default function Sidebar({ open, onNavigate }) {
               <span className="signal-lamp red" />
             </div>
             <div>
-              <strong>ROAD INFRASTRUCTURE</strong>
-              <small>System Operational · Normal</small>
+              <strong>PUNE METROPOLITAN</strong>
+              <small>PMC & PCMC · 100K Active</small>
             </div>
           </div>
           <p className="sidebar-footer-motto">Planning · Construction · Progress · Impact</p>

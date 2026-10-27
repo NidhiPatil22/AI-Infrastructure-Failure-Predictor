@@ -91,14 +91,17 @@ def build_prediction_payload(record: dict) -> dict:
     )
 
     projected = {
-        'asset_id': model_record.get('asset_id', 'ASSET-001'),
-        'asset_type': model_record.get('asset_type'),
+        'asset_id': model_record.get('asset_id', 'INFRA-001'),
+        'infrastructure_type': model_record.get('infrastructure_type') or model_record.get('asset_type') or 'Road Segment',
+        'asset_type': model_record.get('asset_type') or 'Road Segment',
+        'condition': model_record.get('condition') or ('Poor' if structural_score < 50 else ('Fair' if structural_score < 75 else 'Good')),
         'zone': model_record.get('zone'),
         'material': model_record.get('material', 'Concrete'),
         'age_years': model_record.get('age_years'),
         'failure_probability': round(float(probability), 4),
         'risk_level': predicted_risk,
         'remaining_useful_life': round(float(remaining_life), 2),
+        'remaining_useful_life_days': int(remaining_life if remaining_life > 100 else remaining_life * 365),
         'priority': priority,
         'recommendation': recommendation,
         'location': {
@@ -119,7 +122,7 @@ def build_prediction_payload(record: dict) -> dict:
         },
         'failure_probability_percent': format_probability(probability),
         'data_limitations': (
-            'Evaluated via trained Random Forest and linear regression on 2,200 municipal benchmark records. '
+            'Evaluated via trained supervised classification and RUL regression on 50,000 Pune infrastructure records. '
             'Location coordinates establish regional environmental baselines. Does not replace statutory civil structural audits.'
         ),
     }

@@ -1,57 +1,68 @@
-import TrafficLight from '../components/TrafficLight.jsx';
 import ProjectOverviewCard from '../components/ProjectOverviewCard.jsx';
 import ProgressPerformanceCard from '../components/ProgressPerformanceCard.jsx';
 
 const objectives = [
-  'Predict the likelihood of road corridor & bridge failures',
-  'Estimate remaining useful asset lifecycle (RUL in years)',
-  'Surface critical pavement distress & structural corrosion factors',
-  'Cluster highway assets by wear patterns and traffic intensity',
-  'Prioritize urgent road maintenance to prevent transit bottlenecks',
-  'Provide automated engineering recommendations and resurfacing plans',
+  'Monitor 50,000 civil infrastructure records strictly within the Pune municipal boundary (PMC & PCMC).',
+  'Predict the likelihood of road corridor, bridge, and pipeline failures using supervised GBDT & Random Forest models.',
+  'Estimate non-negative Remaining Useful Life (RUL in days) with physics-constrained degradation models.',
+  'Provide a Pune-focused interactive GIS monitoring interface with risk-differentiated telemetry markers.',
+  'Empower citizens and engineers to report field damage with photo uploads, CV analysis, and proximity asset linking.',
+  'Prioritize urgent maintenance in a dynamic Priority Queue combining predictive AI with verified damage reports.',
 ];
 
 const concepts = [
-  ['Classification', 'Estimates failure probability from pavement condition, load stress, and environmental wear.'],
-  ['Regression', 'Predicts remaining useful life as a continuous temporal metric.'],
-  ['Clustering', 'Groups similar highway asset profiles using unsupervised K-Means.'],
-  ['PCA & Dimensionality', 'Condenses high-dimensional asset telemetry for structural grouping.'],
-  ['Feature Engineering', 'Prepares traffic density, rainfall, and material stress inputs for predictive modeling.'],
-  ['Recommendation Engine', 'Maps the predicted risk matrix to immediate engineering interventions.'],
+  ['Supervised Classification', 'Estimates failure probability from pavement condition, corrosion, load stress, and environmental wear.'],
+  ['Non-Negative Regression', 'Predicts remaining useful life as a continuous temporal metric bounded at 0.0 (end-of-life).'],
+  ['Computer Vision Inspection', 'Processes road distress photos using OpenCV edge detection and morphology to calculate Road Damage Index (RDI).'],
+  ['Spatial Proximity Linking', 'Calculates distance to nearest infrastructure asset within 400m to associate field reports with monitored inventory.'],
+  ['Constrained Optimization', 'Solves 0/1 Knapsack maintenance scheduling via Hill Climbing, Beam Search, and Tabu Search.'],
+  ['Zero-Data-Leakage Protocol', 'Strict 80/20 train/test split isolation where imputers, encoders, and scalers learn only from training sets.'],
 ];
 
 export default function About() {
   return (
     <div className="page-stack about-page">
-      {/* Road Infrastructure Project Overview (Image 2 style) */}
+      {/* Pune Civil Infrastructure Project Overview */}
       <ProjectOverviewCard
-        title="Road Infrastructure Project"
-        description="A specialized intelligent transportation research project delivering machine-learning predictive maintenance for roads, highways, bridges, and municipal transit assets. By transforming real-time condition telemetry into actionable risk forecasts, municipal departments can eliminate dangerous road failures before they emerge."
+        title="Pune Urban Infrastructure AI Predictive Maintenance Platform"
+        description="A specialized municipal civil engineering platform delivering AI-driven predictive maintenance and GIS monitoring across 50,000 monitored road segments, bridge approaches, and culvert approaches in the Pune Metropolitan area. By combining sensory metrics, physics-based degradation models, computer vision inspection, and field damage reports, the platform empowers city engineers to prevent dangerous infrastructure failures."
       />
 
-      {/* Progress & Performance Milestones (Image 3 style) */}
-      <ProgressPerformanceCard
-        title="Engineering Progress & Lifecycle"
-        description="Tracking milestones from early stage geotechnical survey planning through sub-base groundwork, structural pier erection, and final wearing course asphalt paving."
-      />
-
-      <section className="panel about-copy">
+      {/* Dataset Provenance & Synthetic Benchmark Notice */}
+      <section className="panel provenance-panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">CIVIL ENGINEERING SCOPE</span>
-            <h2>Project Mission</h2>
+            <span className="eyebrow">DATASET PROVENANCE & TRANSPARENCY NOTICE</span>
+            <h2>50,000 Record Pune Expanded Road Infrastructure Dataset</h2>
+          </div>
+          <span className="small-tag verified-tag">Pune Metropolitan Benchmark</span>
+        </div>
+        <div className="provenance-content">
+          <p>
+            <strong>Explicit Transparency Statement:</strong> The current active infrastructure dataset of 50,000 records
+            combines authentic Pune municipal road network names and 36 verified localities with physically grounded,
+            model-derived synthetic degradation telemetry (including pavement age, corrosion, rainfall, usage intensity, and maintenance history).
+          </p>
+          <div className="provenance-disclaimer">
+            ⚠️ <strong>Academic & Operational Transparency:</strong> This dataset distinguishes real reference seeds (Pune arterial corridors,
+            localities, road classes, approximate coordinates) from model-derived fields (failure labels, RUL days, structural scores).
+            Synthetic labels and RUL values are generated for predictive benchmarking and should not be cited as empirical municipal observations.
           </div>
         </div>
-        <p>
-          Road and transit infrastructure such as asphalt highways, concrete overpasses, suspension bridges, drainage culverts, and electrical corridors deteriorate progressively under heavy axle loads, freeze-thaw weathering, and delayed maintenance. The Road Infrastructure Failure Predictor applies advanced ML models to predict risk scores and optimize resource deployment.
-        </p>
       </section>
 
+      {/* Progress & Performance Milestones */}
+      <ProgressPerformanceCard
+        title="Pune Metropolitan Civil Development Milestones"
+        description="Tracking lifecycle stages across Pune wards from geotechnical survey planning through sub-base groundwork, bridge pier erection, drainage culvert waterproofing, and final asphalt friction wear paving."
+      />
+
+      {/* Core Objectives */}
       <section className="panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">PROJECT DELIVERABLES</span>
-            <h2>Core Objectives</h2>
+            <h2>Core Platform Objectives</h2>
           </div>
         </div>
         <div className="objective-grid">
@@ -64,11 +75,12 @@ export default function About() {
         </div>
       </section>
 
+      {/* Algorithmic Framework */}
       <section className="panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">ALGORITHMIC FRAMEWORK</span>
-            <h2>AI / ML Architecture</h2>
+            <h2>AI / ML & Optimization Architecture</h2>
           </div>
         </div>
         <div className="concept-grid">
@@ -82,44 +94,31 @@ export default function About() {
         </div>
       </section>
 
+      {/* Engineering Stack */}
       <section className="panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">ENGINEERING STACK</span>
-            <h2>Technology Architecture</h2>
+            <h2>Technology Architecture & MLOps</h2>
           </div>
         </div>
         <div className="stack-grid">
           <div>
-            <span>Frontend Interface</span>
-            <strong>React 18 · Vite · Recharts · CSS3 Grid</strong>
+            <span>Frontend GIS & Web UI</span>
+            <strong>React 18 · Vite · Leaflet GIS · Recharts</strong>
           </div>
           <div>
-            <span>Backend Gateway</span>
-            <strong>FastAPI · Python 3.10+ · Uvicorn</strong>
+            <span>Backend Gateway & APIs</span>
+            <strong>FastAPI · Python 3.10+ · SQLite · Uvicorn</strong>
           </div>
           <div>
-            <span>Machine Learning</span>
-            <strong>Scikit-Learn · Pandas · NumPy</strong>
+            <span>Machine Learning & MLOps</span>
+            <strong>Scikit-Learn · MLflow · FLAML AutoML · Joblib</strong>
           </div>
           <div>
-            <span>Data Repository</span>
-            <strong>Road Infrastructure Dataset · SQLite</strong>
+            <span>Computer Vision & GIS</span>
+            <strong>OpenCV · Canny Edge Detection · Geo Bounds</strong>
           </div>
-        </div>
-      </section>
-
-      <section className="future-panel">
-        <div>
-          <span className="eyebrow">ROADMAP & ADVANCED SENSORS</span>
-          <h2>Future Capabilities</h2>
-        </div>
-        <div className="future-chips">
-          <span>Highway Weigh-in-Motion (WIM)</span>
-          <span>GIS Satellite Road Mapping</span>
-          <span>Drone Crack Photogrammetry</span>
-          <span>IoT Bridge Vibration Sensors</span>
-          <span>Automated Work-Order Dispatch</span>
         </div>
       </section>
     </div>

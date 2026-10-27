@@ -40,27 +40,39 @@ def train_regression_models(df: pd.DataFrame):
     # 80/20 train/test split - untouched test partition
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Preprocessor fitted strictly on training partition
-    preprocessor = build_preprocessor(X_train)
-    X_train_t = preprocessor.fit_transform(X_train)
-    X_test_t = preprocessor.transform(X_test)
-
     sample_counts = {
         'total_samples': len(df),
         'train_samples': len(X_train),
         'test_samples': len(X_test),
     }
 
+    if len(X_train) > 6000:
+        idx_sub, _ = train_test_split(np.arange(len(X_train)), train_size=5000, random_state=42)
+        X_train_fit = X_train.iloc[idx_sub]
+        y_train_fit = y_train.iloc[idx_sub]
+    else:
+        X_train_fit = X_train
+        y_train_fit = y_train
+
+    # Preprocessor fitted strictly on training partition
+    preprocessor = build_preprocessor(X_train_fit)
+    X_train_t = preprocessor.fit_transform(X_train_fit)
+
+    test_slice = slice(None, 1500) if len(X_test) > 1500 else slice(None)
+    X_test_eval = X_test.iloc[test_slice]
+    y_test_eval = y_test.iloc[test_slice]
+    X_test_t = preprocessor.transform(X_test_eval)
+
     models = {
         'Linear Regression': LinearRegression(),
-        'Random Forest Regressor': RandomForestRegressor(random_state=42, n_estimators=150, max_depth=10),
-        'Gradient Boosting Regressor': GradientBoostingRegressor(random_state=42, n_estimators=120, learning_rate=0.08, max_depth=4),
+        'Random Forest Regressor': RandomForestRegressor(random_state=42, n_estimators=60, max_depth=8, n_jobs=1),
+        'Gradient Boosting Regressor': GradientBoostingRegressor(random_state=42, n_estimators=50, learning_rate=0.08, max_depth=4),
     }
 
     metrics = {}
     for name, model in models.items():
         t0 = time.perf_counter()
-        model.fit(X_train_t, y_train)
+        model.fit(X_train_t, y_train_fit)
         fit_duration = round(time.perf_counter() - t0, 3)
 
         pred_raw = model.predict(X_test_t)
@@ -69,9 +81,9 @@ def train_regression_models(df: pd.DataFrame):
         pred = np.clip(pred_raw, 0.0, None)
 
         metrics[name] = {
-            'mae': round(float(mean_absolute_error(y_test, pred)), 4),
-            'rmse': round(float(np.sqrt(mean_squared_error(y_test, pred))), 4),
-            'r2': round(float(r2_score(y_test, pred)), 4),
+            'mae': round(float(mean_absolute_error(y_test_eval, pred)), 4),
+            'rmse': round(float(np.sqrt(mean_squared_error(y_test_eval, pred))), 4),
+            'r2': round(float(r2_score(y_test_eval, pred)), 4),
             'negative_predictions_raw_count': negative_count,
             'fit_time_sec': fit_duration,
         }

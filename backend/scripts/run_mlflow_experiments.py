@@ -40,7 +40,9 @@ os.environ["MLFLOW_DISABLE_AGENT_HINT"] = "1"
 os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+PRIMARY_DATA_PATH = ROOT / "data" / "pune_expanded_road_infrastructure_50000.csv"
+LEGACY_DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+DATA_PATH = PRIMARY_DATA_PATH if PRIMARY_DATA_PATH.exists() else LEGACY_DATA_PATH
 REPORTS_DIR = ROOT / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 MLRUNS_DB = ROOT / "data" / "mlflow_tracking.db"

@@ -1,132 +1,131 @@
 {
   "models": {
     "Logistic Regression": {
-      "accuracy": 0.5705,
-      "precision": 0.6164,
-      "recall": 0.5885,
-      "f1": 0.6021,
-      "macro_f1": 0.5677,
-      "roc_auc": 0.6032,
+      "accuracy": 0.696,
+      "precision": 0.6955,
+      "recall": 0.649,
+      "f1": 0.6715,
+      "macro_f1": 0.6943,
+      "roc_auc": 0.7565,
       "confusion_matrix": [
         [
-          108,
-          89
+          578,
+          204
         ],
         [
-          100,
-          143
+          252,
+          466
         ]
       ],
-      "cv_5fold_f1_mean": 0.6319,
-      "cv_5fold_f1_std": 0.0206,
-      "fit_time_sec": 0.023,
-      "inference_time_ms": 0.4
+      "cv_5fold_f1_mean": 0.6623,
+      "cv_5fold_f1_std": 0.0152,
+      "fit_time_sec": 0.068,
+      "inference_time_ms": 0.77
     },
     "Decision Tree": {
-      "accuracy": 0.55,
-      "precision": 0.6364,
-      "recall": 0.4321,
-      "f1": 0.5147,
-      "macro_f1": 0.5476,
-      "roc_auc": 0.5805,
+      "accuracy": 0.6547,
+      "precision": 0.6285,
+      "recall": 0.6811,
+      "f1": 0.6537,
+      "macro_f1": 0.6547,
+      "roc_auc": 0.7054,
       "confusion_matrix": [
         [
-          137,
-          60
+          493,
+          289
         ],
         [
-          138,
-          105
+          229,
+          489
         ]
       ],
-      "cv_5fold_f1_mean": 0.5693,
-      "cv_5fold_f1_std": 0.0281,
-      "fit_time_sec": 0.052,
-      "inference_time_ms": 0.84
+      "cv_5fold_f1_mean": 0.6431,
+      "cv_5fold_f1_std": 0.0057,
+      "fit_time_sec": 0.108,
+      "inference_time_ms": 1.08
     },
     "Random Forest": {
-      "accuracy": 0.5636,
-      "precision": 0.5962,
-      "recall": 0.6502,
-      "f1": 0.622,
-      "macro_f1": 0.553,
-      "roc_auc": 0.6079,
+      "accuracy": 0.7007,
+      "precision": 0.7053,
+      "recall": 0.6435,
+      "f1": 0.673,
+      "macro_f1": 0.6985,
+      "roc_auc": 0.7544,
       "confusion_matrix": [
         [
-          90,
-          107
+          589,
+          193
         ],
         [
-          85,
-          158
+          256,
+          462
         ]
       ],
-      "cv_5fold_f1_mean": 0.6489,
-      "cv_5fold_f1_std": 0.0167,
-      "fit_time_sec": 2.095,
-      "inference_time_ms": 53.77
+      "cv_5fold_f1_mean": 0.6535,
+      "cv_5fold_f1_std": 0.0166,
+      "fit_time_sec": 1.11,
+      "inference_time_ms": 36.38
     },
     "Gradient Boosting": {
-      "accuracy": 0.5545,
-      "precision": 0.5861,
-      "recall": 0.6584,
-      "f1": 0.6202,
-      "macro_f1": 0.5408,
-      "roc_auc": 0.5808,
+      "accuracy": 0.6967,
+      "precision": 0.7111,
+      "recall": 0.617,
+      "f1": 0.6607,
+      "macro_f1": 0.6932,
+      "roc_auc": 0.7491,
       "confusion_matrix": [
         [
-          84,
-          113
+          602,
+          180
         ],
         [
-          83,
-          160
+          275,
+          443
         ]
       ],
-      "cv_5fold_f1_mean": 0.6459,
-      "cv_5fold_f1_std": 0.0231,
-      "fit_time_sec": 3.682,
-      "inference_time_ms": 1.97
+      "cv_5fold_f1_mean": 0.6408,
+      "cv_5fold_f1_std": 0.0115,
+      "fit_time_sec": 3.633,
+      "inference_time_ms": 3.02
     },
     "Random Forest (Tuned)": {
-      "accuracy": 0.5432,
-      "precision": 0.5755,
-      "recall": 0.6584,
-      "f1": 0.6142,
-      "macro_f1": 0.5272,
-      "roc_auc": 0.5893,
+      "accuracy": 0.7,
+      "precision": 0.7074,
+      "recall": 0.6365,
+      "f1": 0.6701,
+      "macro_f1": 0.6975,
+      "roc_auc": 0.7505,
       "confusion_matrix": [
         [
-          79,
-          118
+          593,
+          189
         ],
         [
-          83,
-          160
+          261,
+          457
         ]
       ],
-      "cv_5fold_f1_mean": 0.6595,
-      "fit_time_sec": 108.604,
-      "inference_time_ms": 108761.84,
+      "cv_5fold_f1_mean": 0.65,
+      "fit_time_sec": 11.079,
+      "inference_time_ms": 11187.32,
       "best_params": {
-        "max_depth": 10,
-        "min_samples_leaf": 1,
-        "n_estimators": 250
+        "max_depth": 6,
+        "n_estimators": 75
       }
     }
   },
   "best_model": "Random Forest",
   "sample_counts": {
-    "total_samples": 2200,
-    "train_samples": 1760,
-    "test_samples": 440,
+    "total_samples": 50000,
+    "train_samples": 40000,
+    "test_samples": 10000,
     "train_class_distribution": {
-      "1": 970,
-      "0": 790
+      "0": 20897,
+      "1": 19103
     },
     "test_class_distribution": {
-      "1": 243,
-      "0": 197
+      "0": 5224,
+      "1": 4776
     }
   },
   "selection_criterion": "Risk-Prioritized F1 & Recall: Prioritizes failure recall (>= 0.60) and balanced F1 score to minimize costly municipal false negatives."

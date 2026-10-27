@@ -17,7 +17,10 @@ import joblib
 import pandas as pd
 
 from app.ml.automl import run_automl_training
-DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+
+PRIMARY_DATA_PATH = ROOT / "data" / "pune_expanded_road_infrastructure_50000.csv"
+LEGACY_DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+DATA_PATH = PRIMARY_DATA_PATH if PRIMARY_DATA_PATH.exists() else LEGACY_DATA_PATH
 REPORTS_DIR = ROOT / "reports"
 MODELS_DIR = ROOT / "models"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)

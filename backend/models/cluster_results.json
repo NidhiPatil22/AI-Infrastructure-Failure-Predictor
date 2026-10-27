@@ -3,61 +3,53 @@
   "silhouette_values": [
     {
       "k": 2,
-      "silhouette_score": 0.3954
+      "silhouette_score": 0.6368
     },
     {
       "k": 3,
-      "silhouette_score": 0.3
+      "silhouette_score": 0.5813
     },
     {
       "k": 4,
-      "silhouette_score": 0.2381
+      "silhouette_score": 0.5477
     },
     {
       "k": 5,
-      "silhouette_score": 0.2228
-    },
-    {
-      "k": 6,
-      "silhouette_score": 0.1984
-    },
-    {
-      "k": 7,
-      "silhouette_score": 0.1917
+      "silhouette_score": 0.5362
     }
   ],
   "cluster_summary": [
     {
       "cluster_id": 0,
-      "size": 727,
-      "average_age_years": 18.73,
-      "average_traffic_density": 55.17,
-      "average_structural_score": 71.91,
-      "average_days_since_maintenance": 36.72,
-      "average_previous_failures": 1.19,
-      "average_usage_intensity": 57.24,
+      "size": 1643,
+      "average_age_years": 8.4,
+      "average_traffic_density": 62.97,
+      "average_structural_score": 79.28,
+      "average_days_since_maintenance": 929.96,
+      "average_previous_failures": 0.74,
+      "average_usage_intensity": 0.69,
       "description": "Healthy Infrastructure"
     },
     {
       "cluster_id": 1,
-      "size": 546,
-      "average_age_years": 18.42,
-      "average_traffic_density": 54.16,
-      "average_structural_score": 70.63,
-      "average_days_since_maintenance": 221.12,
-      "average_previous_failures": 1.16,
-      "average_usage_intensity": 58.96,
+      "size": 1639,
+      "average_age_years": 8.53,
+      "average_traffic_density": 63.48,
+      "average_structural_score": 79.56,
+      "average_days_since_maintenance": 1512.15,
+      "average_previous_failures": 0.79,
+      "average_usage_intensity": 0.69,
       "description": "Moderate Risk Infrastructure"
     },
     {
       "cluster_id": 2,
-      "size": 927,
-      "average_age_years": 18.77,
-      "average_traffic_density": 54.98,
-      "average_structural_score": 71.97,
-      "average_days_since_maintenance": 125.61,
-      "average_previous_failures": 1.32,
-      "average_usage_intensity": 57.63,
+      "size": 1718,
+      "average_age_years": 8.53,
+      "average_traffic_density": 64.16,
+      "average_structural_score": 79.47,
+      "average_days_since_maintenance": 309.02,
+      "average_previous_failures": 0.79,
+      "average_usage_intensity": 0.69,
       "description": "Critical Infrastructure"
     }
   ]

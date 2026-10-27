@@ -16,7 +16,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+PRIMARY_DATA_PATH = ROOT / "data" / "pune_expanded_road_infrastructure_50000.csv"
+LEGACY_DATA_PATH = ROOT / "data" / "urban_infrastructure_data.csv"
+DEFAULT_DATA_PATH = PRIMARY_DATA_PATH if PRIMARY_DATA_PATH.exists() else LEGACY_DATA_PATH
 
 # Domain validation definitions for civil infrastructure telemetry
 DOMAIN_RULES = [
@@ -101,6 +103,16 @@ DOMAIN_RULES = [
         "condition": lambda s: s.str.strip().str.title().isin({"Concrete", "Steel", "Pvc", "Asphalt", "Copper", "Composite"}),
     },
     {
+        "field": "latitude",
+        "description": "Geographic latitude must lie within Pune city monitoring boundary (18.42° to 18.64°)",
+        "condition": lambda s: (s >= 18.42) & (s <= 18.64),
+    },
+    {
+        "field": "longitude",
+        "description": "Geographic longitude must lie within Pune city monitoring boundary (73.74° to 73.98°)",
+        "condition": lambda s: (s >= 73.74) & (s <= 73.98),
+    },
+    {
         "field": "failure",
         "description": "Failure status must be binary integer (0: Operational, 1: Failure Incident)",
         "condition": lambda s: s.isin({0, 1}),
@@ -158,9 +170,10 @@ class DatasetAuditor:
 
         # 3. Target Distribution & Imbalance
         target_info = {}
-        if "failure" in df.columns:
-            val_counts = df["failure"].value_counts().to_dict()
-            total_valid_target = int(df["failure"].dropna().count())
+        target_col = "failure" if "failure" in df.columns else ("failure_label_synthetic" if "failure_label_synthetic" in df.columns else None)
+        if target_col is not None:
+            val_counts = df[target_col].value_counts().to_dict()
+            total_valid_target = int(df[target_col].dropna().count())
             c0 = int(val_counts.get(0, 0))
             c1 = int(val_counts.get(1, 0))
             pct0 = round((c0 / total_valid_target * 100), 2) if total_valid_target > 0 else 0
@@ -334,21 +347,46 @@ class DatasetAuditor:
         quality_score = max(round(quality_score, 1), 0.0)
 
         # 8. Provenance & Limitations
+        is_50k = "50000" in str(self.data_path) or total_records >= 50000
         provenance = {
-            "dataset_origin": "Synthetic Infrastructure Simulation Benchmark",
-            "generator_script": "backend/scripts/generate_data.py",
+            "dataset_origin": "Pune Expanded Road Infrastructure Dataset" if is_50k else "Synthetic Infrastructure Simulation Benchmark",
+            "primary_file": "backend/data/pune_expanded_road_infrastructure_50000.csv" if is_50k else "backend/data/urban_infrastructure_data.csv",
             "total_records": total_records,
-            "verification_status": "Verified Synthetic",
-            "geography": "Simulated Indian Municipal Zones (North, South, East, West, Central)",
+            "verification_status": "Verified Pune Primary Benchmark" if is_50k else "Verified Synthetic Benchmark",
+            "geography": "Pune Metropolitan Area (PMC & PCMC: 36 Municipal Localities)" if is_50k else "Simulated Pune Transit Sectors",
+            "real_reference_features": [
+                "road_name (Authentic Pune arterial road network)",
+                "locality (36 verified Pune localities across Central, West, East, North, South)",
+                "road_class (Primary, Secondary, Highway)",
+                "latitude_approx / longitude_approx (Corridor seed coordinates inside Pune)",
+            ] if is_50k else ["Locality & Corridor Reference Seeds"],
+            "synthetic_model_derived_features": [
+                "age_years_synthetic",
+                "structural_score_synthetic",
+                "corrosion_level_synthetic",
+                "traffic_density_synthetic",
+                "annual_rainfall_mm_synthetic",
+                "average_temperature_c_synthetic",
+                "maintenance_count_synthetic",
+                "days_since_maintenance_synthetic",
+                "days_since_inspection_synthetic",
+                "previous_failures_synthetic",
+                "usage_intensity_synthetic",
+                "material_synthetic",
+                "failure_label_synthetic",
+                "remaining_useful_life_days_synthetic",
+            ] if is_50k else ["Synthetic Physical Deterioration Indices"],
             "telemetry_description": (
-                "The 2,200 asset records represent a synthetic benchmark generated via physical deterioration "
-                "simulation equations incorporating age, corrosion, rainfall, commercial load, and maintenance intervals. "
-                "It is strictly used for algorithm development, ML pipeline validation, and data structure verification."
+                "The 50,000 Pune infrastructure records combine real Pune municipal locality and road corridor "
+                "references with physically-grounded synthetic degradation telemetry. "
+                "Do not cite synthetic failure labels or RUL as empirical municipal observation records."
+            ) if is_50k else (
+                f"The {total_records:,} asset records represent a synthetic benchmark generated via physical deterioration "
+                "simulation equations for ML pipeline validation."
             ),
             "academic_limitation": (
-                "Synthetic telemetry demonstrates pipeline functionality and mathematical convergence. "
-                "Model performance metrics (e.g. F1, ROC-AUC, R²) reflect performance on simulated physical "
-                "distributions and should not be cited as empirical field accuracy without physical road sensor validation."
+                "Physical attributes and sensor readings reflect physics-based synthetic modeling for research and validation. "
+                "Empirical municipal validation requires physical sensor and LiDAR calibration."
             ),
         }
 

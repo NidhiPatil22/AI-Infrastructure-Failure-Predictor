@@ -57,7 +57,7 @@ export default function DatasetAudit() {
           <h2>Dataset Quality & Schema Audit</h2>
           <p>
             Dynamically evaluated from active telemetry dataset (
-            <code>backend/data/urban_infrastructure_data.csv</code>).
+            <code>{provenance?.primary_file || 'backend/data/pune_expanded_road_infrastructure_50000.csv'}</code>).
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -143,17 +143,37 @@ export default function DatasetAudit() {
               {provenance.telemetry_description}
             </p>
             <div style={{ marginTop: '8px', fontSize: '12px' }}>
-              <strong>Generator Script:</strong> <code>{provenance.generator_script}</code>
+              <strong>Configured Geography:</strong> <span>{provenance.geography}</span>
             </div>
+            {provenance.real_reference_features && (
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '6px', borderLeft: '3px solid #10b981' }}>
+                <strong style={{ fontSize: '12px', color: '#065f46' }}>REAL / REFERENCE DATA:</strong>
+                <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: '12px', color: '#047857' }}>
+                  {provenance.real_reference_features.map((feat, fIdx) => (
+                    <li key={fIdx}>{feat}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div>
             <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#b45309' }}>Experimental Boundaries & Integrity</h4>
             <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.6, color: 'var(--text-muted, #64748b)' }}>
               {provenance.academic_limitation}
             </p>
-            <div style={{ marginTop: '8px', fontSize: '12px' }}>
-              <strong>Configured Geography:</strong> <span>{provenance.geography}</span>
-            </div>
+            {provenance.synthetic_model_derived_features && (
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(245, 158, 11, 0.08)', borderRadius: '6px', borderLeft: '3px solid #f59e0b' }}>
+                <strong style={{ fontSize: '12px', color: '#92400e' }}>SYNTHETIC / MODEL-DERIVED:</strong>
+                <ul style={{ margin: '6px 0 0 16px', padding: 0, fontSize: '11.5px', color: '#b45309', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+                  {provenance.synthetic_model_derived_features.map((feat, fIdx) => (
+                    <li key={fIdx}><code>{feat}</code></li>
+                  ))}
+                </ul>
+                <small style={{ display: 'block', marginTop: '6px', color: '#78350f', fontSize: '11px' }}>
+                  Note: Do not claim synthetic failure labels or RUL values are real municipal empirical observations.
+                </small>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -379,7 +399,7 @@ export default function DatasetAudit() {
               <thead>
                 <tr>
                   <th>Row</th>
-                  <th>Asset ID</th>
+                  <th>Internal Ref</th>
                   <th>Field</th>
                   <th>Observed Value</th>
                   <th>Issue Type</th>

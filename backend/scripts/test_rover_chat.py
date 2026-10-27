@@ -117,7 +117,7 @@ def test_real_actions_execution():
     # 1. Real Predictions Data Action
     res_pred = workflow_engine.process_step("infrastructure_risk", "options", "risk_view")
     assert res_pred["action_executed"] == "fetch_predictions"
-    assert "2,200" in res_pred["response"] or "348" in res_pred["response"]
+    assert "50,000" in res_pred["response"] or "100,000" in res_pred["response"] or "2,200" in res_pred["response"] or "348" in res_pred["response"]
     assert res_pred["route"] == "/predict"
 
     # 2. Real Maintenance Optimization Comparison Action

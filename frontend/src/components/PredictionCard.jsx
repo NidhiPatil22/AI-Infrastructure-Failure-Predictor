@@ -13,9 +13,9 @@ export default function PredictionCard({ result }) {
       <div className="result-heading">
         <div>
           <span className="eyebrow">ASSESSMENT COMPLETE · SUPERVISED ML</span>
-          <h2>{result.asset_id || 'Infrastructure Assessment'}</h2>
+          <h2>{result.infrastructure_type || result.asset_type || 'Infrastructure'} Risk Assessment</h2>
           <p>
-            <strong>{result.asset_type || 'Asset'}</strong>
+            <strong>{result.infrastructure_type || result.asset_type || 'Road Segment'}</strong>
             {addr ? ` · 📍 ${addr}` : result.zone ? ` · ${result.zone} Zone` : ''}
           </p>
         </div>
@@ -48,8 +48,13 @@ export default function PredictionCard({ result }) {
           </div>
         </div>
         <div className="result-metric">
-          <span>Remaining Useful Life (RUL)</span>
-          <strong>{formatNumber(result.remaining_useful_life, 1)} <small>years</small></strong>
+          <span>Estimated RUL</span>
+          <strong>
+            {result.remaining_useful_life_days != null
+              ? `${formatNumber(result.remaining_useful_life_days)} `
+              : `${formatNumber(Math.round(Number(result.remaining_useful_life || 0) * 365))} `}
+            <small>days</small>
+          </strong>
         </div>
         <div className="result-metric">
           <span>Triage Priority</span>
